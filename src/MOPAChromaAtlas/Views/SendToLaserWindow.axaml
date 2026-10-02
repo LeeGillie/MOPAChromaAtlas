@@ -1,0 +1,117 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:v="using:MOPAChromaAtlas.Views"
+        x:Class="MOPAChromaAtlas.Views.SendToLaserWindow"
+        Title="Send to the laser"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Width="1400" Height="860" MinWidth="1000" MinHeight="600"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.step">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.mark">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Width" Value="22" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="*,Auto" ColumnDefinitions="440,*">
+    <ScrollViewer Background="#111317">
+      <StackPanel Margin="16,8,16,16" Spacing="6">
+        <TextBlock x:Name="GridTitle" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock x:Name="GridSummary" Classes="dim" TextWrapping="Wrap" />
+
+        <TextBlock Classes="h" Text="Before you start" />
+        <TextBlock x:Name="PlaceText" TextWrapping="Wrap" FontSize="13"
+                   Text="Put the blank on the bed and focus as usual. The picture on the right shows where the job will go: drag it onto the blank." />
+        <Grid ColumnDefinitions="Auto,80,Auto,80,*" ColumnSpacing="6">
+          <TextBlock Text="Job centre  X" VerticalAlignment="Center" FontSize="13" />
+          <NumericUpDown Grid.Column="1" x:Name="CentreXBox" Minimum="0" Maximum="210" Increment="1" FormatString="0.0" ShowButtonSpinner="False"
+                         ToolTip.Tip="Bed X of the middle of the job, mm (105 is the middle of the bed)." />
+          <TextBlock Grid.Column="2" Text="Y" VerticalAlignment="Center" FontSize="13" />
+          <NumericUpDown Grid.Column="3" x:Name="CentreYBox" Minimum="0" Maximum="210" Increment="1" FormatString="0.0" ShowButtonSpinner="False"
+                         ToolTip.Tip="Bed Y of the middle of the job, mm (105 is the middle of the bed)." />
+          <Button Grid.Column="4" x:Name="CentreButton" Content="Middle of bed" HorizontalAlignment="Left"
+                  ToolTip.Tip="Put the job back in the middle of the bed (105, 105)." />
+        </Grid>
+        <Border x:Name="NotPlacedPanel" BorderBrush="#7A5A20" BorderThickness="1" CornerRadius="4" Padding="10" Background="#1E1A12">
+          <StackPanel Spacing="6">
+            <TextBlock x:Name="NotPlacedText" TextWrapping="Wrap" FontSize="13" Foreground="#F0C674" />
+            <Button x:Name="CalibrateNowButton" Content="Calibrate camera…" Classes="accent" />
+            <CheckBox x:Name="BlindBox" FontSize="12"
+                      Content="Send without seeing it on the picture: I have checked where this position lands on my machine" />
+          </StackPanel>
+        </Border>
+        <CheckBox x:Name="MarksBox" IsChecked="True" FontSize="13"
+                  Content="Engrave corner crosses, so the card can be read automatically"
+                  ToolTip.Tip="Three small crosses beside the grid show which way up the card is and where the grid ends, even when the faintest cells leave no mark." />
+        <CheckBox x:Name="AutoReadBox" IsChecked="True" FontSize="13"
+                  Content="When the job finishes, photograph the card with the laser's camera and read it"
+                  ToolTip.Tip="The card is read where it lies. You check the result before anything is added to the atlas." />
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+          <TextBlock Text="Laser" VerticalAlignment="Center" FontSize="13" />
+          <TextBox Grid.Column="1" x:Name="AddressBox"
+                   ToolTip.Tip="The laser's address. Over USB it is http://192.168.42.1:8080." />
+          <Button Grid.Column="2" x:Name="CheckButton" Content="Check laser"
+                  ToolTip.Tip="Look for the laser and check its door, without sending anything." />
+        </Grid>
+
+        <TextBlock Classes="h" Text="Progress" />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+          <TextBlock x:Name="Mark1" Classes="mark" Text="1" />
+          <TextBlock Grid.Column="1" x:Name="Step1" Classes="step" Text="Find the laser and check the door is closed." />
+          <TextBlock Grid.Row="1" x:Name="Mark2" Classes="mark" Text="2" />
+          <TextBlock Grid.Row="1" Grid.Column="1" x:Name="Step2" Classes="step" Text="Build the job and send it to the laser, armed but not started." />
+          <TextBlock Grid.Row="2" x:Name="Mark3" Classes="mark" Text="3" />
+          <TextBlock Grid.Row="2" Grid.Column="1" x:Name="Step3" Classes="step" Text="You press Start on the machine." />
+          <TextBlock Grid.Row="3" x:Name="Mark4" Classes="mark" Text="4" />
+          <TextBlock Grid.Row="3" Grid.Column="1" x:Name="Step4" Classes="step" Text="The laser engraves the card." />
+          <TextBlock Grid.Row="4" x:Name="Mark5" Classes="mark" Text="5" />
+          <TextBlock Grid.Row="4" Grid.Column="1" x:Name="Step5" Classes="step" Text="Photograph the card and read every cell." />
+        </Grid>
+
+        <Border x:Name="StartHerePanel" BorderBrush="#5A3030" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,8,0,0" IsVisible="False">
+          <StackPanel Spacing="6">
+            <TextBlock TextWrapping="Wrap" FontSize="13"
+                       Text="Prefer the machine's own Start button: you are standing at the laser when it fires. To start from here instead:" />
+            <CheckBox x:Name="ConfirmBox" FontSize="13"
+                      Content="I have checked the beam path is clear, the lid is closed, and I am wearing the right eyewear" />
+            <Button x:Name="StartHereButton" Content="Start from here (fires the laser)" Classes="danger" IsEnabled="False"
+                    ToolTip.Tip="Starts the armed job without pressing the button on the machine." />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Grid Grid.Column="1" RowDefinitions="Auto,*">
+      <Border Background="#15171C" Padding="8,6" BorderBrush="#2A2E36" BorderThickness="0,0,0,1">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6">
+            <Button x:Name="PhotoButton" Content="Take picture" ToolTip.Tip="A fresh picture from the laser's camera." />
+            <Button x:Name="CalibrateButton" Content="Calibrate camera…" ToolTip.Tip="Teach Atlas where the bed is in the camera's picture (once; engraves a target on a scrap)." />
+          </StackPanel>
+          <TextBlock x:Name="PreviewText" Classes="dim" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="12" />
+        </DockPanel>
+      </Border>
+      <v:PhotoView Grid.Row="1" x:Name="Photo" />
+    </Grid>
+
+    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button x:Name="StopButton" Content="Stop job" IsVisible="False"
+                  ToolTip.Tip="Ask the laser to stop the job. Not yet confirmed on the Ultra: the machine's own stop button always works." />
+          <Button x:Name="CloseButton" Content="Close"
+                  ToolTip.Tip="Close this window. A job already started keeps running on the laser." />
+          <Button x:Name="SendButton" Content="Send and arm" Classes="accent"
+                  ToolTip.Tip="Build the job, check the door is closed, send it to the laser and arm it. Nothing fires until Start is pressed." />
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" TextWrapping="Wrap" />
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

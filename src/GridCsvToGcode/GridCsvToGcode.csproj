@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    One-off CLI: turns a settings CSV exported by MOPAChromaAtlas (GridExport.ToCsv)
+    back into a real Lumos Ultra gcode.gc job via MOPAChroma.Core's GcodeExport, for
+    grids MakeIt's own wizard cannot represent (independently-varying per-cell
+    parameters). See src/MOPAChroma.Core/Grids/GcodeExport.cs and
+    docs/CALIBRATION-FINDINGS.md.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>GridCsvToGcode</RootNamespace>
+    <!--
+      No GridCsvToGcode.exe: run it through "dotnet run" with this project, or as
+      "dotnet GridCsvToGcode.dll". A freshly built, unsigned .exe kept being locked by
+      Bitdefender on Cortex, failing the build with "Access to the path ... is denied".
+    -->
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MOPAChroma.Core\MOPAChroma.Core.csproj" />
+  </ItemGroup>
+
+</Project>

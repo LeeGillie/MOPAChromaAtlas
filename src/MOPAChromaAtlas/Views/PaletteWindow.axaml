@@ -1,0 +1,69 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MOPAChromaAtlas.Views.PaletteWindow"
+        Title="Palette and exports"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Width="1180" Height="820" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterOwner">
+  <Grid ColumnDefinitions="*,360" RowDefinitions="*,Auto">
+    <ScrollViewer Background="#0F1114">
+      <StackPanel Margin="16,10,16,16" Spacing="8">
+        <TextBlock x:Name="HeaderText" FontSize="17" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock x:Name="SummaryText" Classes="dim" TextWrapping="Wrap" />
+        <CheckBox x:Name="ShowUnverifiedBox" IsChecked="True" Content="Also show colours made only once (not yet repeated)" FontSize="13" />
+        <ItemsControl x:Name="Swatches">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
+        <TextBlock x:Name="EmptyText" Classes="dim" FontSize="14" TextWrapping="Wrap" IsVisible="False"
+                   Text="No colours yet for this material, source and lens. Colours appear here once cells are read as Good." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <ScrollViewer Grid.Column="1" Background="#111317">
+      <StackPanel Margin="14,10,14,14" Spacing="8">
+        <CheckBox x:Name="VerifiedOnlyBox" IsChecked="True" FontSize="13"
+                  Content="Repeated (verified) colours only (recommended)" />
+        <TextBlock x:Name="ExportCountText" TextWrapping="Wrap" FontSize="13" FontWeight="SemiBold" />
+
+        <TextBlock Classes="h" Text="MakeIt" Margin="0,6,0,0" />
+        <TextBlock TextWrapping="Wrap" FontSize="13"
+                   Text="A MakeIt project (.wws) with one square per colour, filled in that colour, each square already set to its recipe (Fill: power, speed, passes, pulse width, frequency, line density). You choose where to save it (it starts in Documents\MOPAChroma Atlas); then open it in MakeIt (File, Open). To use a colour: copy its square into your design, or give your artwork the square's settings. A .txt list beside it names each square." />
+        <Button x:Name="MakeItButton" Content="Save MakeIt palette…" Classes="accent" />
+        <TextBlock x:Name="MakeItText" TextWrapping="Wrap" FontSize="12" />
+        <Button x:Name="MakeItFolderButton" Content="Show the file in its folder" IsVisible="False" />
+        <TextBlock TextWrapping="Wrap" FontSize="13" Margin="0,6,0,0"
+                   Text="MakeIt materials (.json): every colour as a MakeIt material, named like its square in the palette (e.g. 'Titanium 1.3 Deep blue'), with its recipe and its colour as the picture. In MakeIt: Material preview, Import, choose the file; they appear under Customization, beside your own materials. Then select artwork and pick a colour from the Material list." />
+        <Button x:Name="MakeItMaterialsButton" Content="Save MakeIt materials…" Classes="accent" />
+        <TextBlock x:Name="MakeItMaterialsText" TextWrapping="Wrap" FontSize="12" />
+        <Button x:Name="MakeItMaterialsFolderButton" Content="Show the file in its folder" IsVisible="False" />
+        <TextBlock Classes="dim" TextWrapping="Wrap" FontSize="12"
+                   Text="In MakeIt, choose the Lumos Ultra and its MOPA module (top left) before clicking a square; otherwise MakeIt crosses out the speed and line density and hides frequency and pulse width. Focus (Z) is not in the file: set it yourself if a colour needs it. Written in MakeIt 3.0.5's plain project format, which MakeIt 3.0.6 opens." />
+
+        <TextBlock Classes="h" Text="LightBurn" Margin="0,12,0,0" />
+        <TextBlock TextWrapping="Wrap" FontSize="13"
+                   Text="A material library (.clb): one entry per colour, named by colour, with its power, speed, frequency, pulse width, line spacing and passes. In LightBurn: Library, then Load (or Merge into your own library), then Assign or Link an entry to a layer." />
+        <Button x:Name="LightBurnButton" Content="Save LightBurn library…" Classes="accent" />
+        <TextBlock x:Name="LightBurnText" TextWrapping="Wrap" FontSize="12" />
+        <Button x:Name="LightBurnFolderButton" Content="Show the file in its folder" IsVisible="False" />
+        <TextBlock Classes="dim" TextWrapping="Wrap" FontSize="12"
+                   Text="Not yet tried in LightBurn with the Ultra: whether LightBurn sends pulse width and frequency to the Ultra is unconfirmed. A .json file with every colour's full record is saved beside the library." />
+
+
+        <TextBlock Classes="h" Text="Recipes travel only so far" Margin="0,12,0,0" />
+        <TextBlock Classes="dim" TextWrapping="Wrap" FontSize="12"
+                   Text="A colour repeats on the same kind of source and lens, on the same material. On another laser or lens the same numbers are a good starting point, not a promise." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <Button DockPanel.Dock="Right" x:Name="CloseButton" Content="Close" />
+        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" TextWrapping="Wrap" />
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

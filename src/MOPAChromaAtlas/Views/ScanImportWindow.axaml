@@ -1,0 +1,201 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MOPAChromaAtlas.Views.ScanImportWindow"
+        Title="Import a test card"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Width="1400" Height="900" MinWidth="1040" MinHeight="640"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="NumericUpDown">
+      <Setter Property="ShowButtonSpinner" Value="False" />
+    </Style>
+    <Style Selector="TextBlock.lbl">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="330,*,330" RowDefinitions="*,Auto">
+
+    <!-- Left: what the card is, and the steps -->
+    <ScrollViewer Grid.Column="0" Background="#111317">
+      <StackPanel Margin="12,0,12,12" Spacing="4">
+
+        <StackPanel x:Name="ExistingPanel" Spacing="4" IsVisible="False">
+          <TextBlock Classes="h" Text="1. The grid" />
+          <TextBlock x:Name="ExistingTitle" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" />
+          <TextBlock x:Name="ExistingText" Classes="dim" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel x:Name="DefinitionPanel" Spacing="4">
+        <TextBlock Classes="h" Text="1. Which card" />
+        <ComboBox x:Name="PlannedBox" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="A card the atlas planned (its settings fill in by themselves), or a new card you set up in MakeIt yourself." />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button x:Name="UltraPresetButton" Content="Ultra colour test" FontSize="12"
+                  ToolTip.Tip="Lay the card out like MakeIt's MOPA colour test on the Lumos Ultra: frequency down (top = highest), power across (left = lowest)." />
+          <Button x:Name="ArrayPresetButton" Content="Material test array" FontSize="12"
+                  ToolTip.Tip="Lay the card out like MakeIt's Material Testing Array: speed down, power across." />
+        </StackPanel>
+
+        <TextBlock Classes="h" Text="Rows (top to bottom)" FontSize="12" />
+        <Grid ColumnDefinitions="2*,*,*,0.65*" ColumnSpacing="4">
+          <ComboBox x:Name="RowAxisBox" HorizontalAlignment="Stretch" ToolTip.Tip="The setting that changes from row to row." />
+          <NumericUpDown Grid.Column="1" x:Name="RowMinBox" Minimum="0" Maximum="100000" FormatString="0.##" ToolTip.Tip="Lowest value on the card for this setting." />
+          <NumericUpDown Grid.Column="2" x:Name="RowMaxBox" Minimum="0" Maximum="100000" FormatString="0.##" ToolTip.Tip="Highest value on the card for this setting." />
+          <NumericUpDown Grid.Column="3" x:Name="RowCountBox" Minimum="2" Maximum="60" FormatString="0" ToolTip.Tip="Number of rows." />
+        </Grid>
+        <CheckBox x:Name="RowDescBox" Content="Top row has the highest value" FontSize="12"
+                  ToolTip.Tip="Ticked when the top row's label is the largest number (as on the Ultra colour test)." />
+
+        <TextBlock Classes="h" Text="Columns (left to right)" FontSize="12" />
+        <Grid ColumnDefinitions="2*,*,*,0.65*" ColumnSpacing="4">
+          <ComboBox x:Name="ColAxisBox" HorizontalAlignment="Stretch" ToolTip.Tip="The setting that changes from column to column." />
+          <NumericUpDown Grid.Column="1" x:Name="ColMinBox" Minimum="0" Maximum="100000" FormatString="0.##" ToolTip.Tip="Lowest value on the card for this setting." />
+          <NumericUpDown Grid.Column="2" x:Name="ColMaxBox" Minimum="0" Maximum="100000" FormatString="0.##" ToolTip.Tip="Highest value on the card for this setting." />
+          <NumericUpDown Grid.Column="3" x:Name="ColCountBox" Minimum="2" Maximum="60" FormatString="0" ToolTip.Tip="Number of columns." />
+        </Grid>
+        <CheckBox x:Name="ColDescBox" Content="Left column has the highest value" FontSize="12"
+                  ToolTip.Tip="Ticked when the leftmost column's label is the largest number." />
+        <TextBlock Classes="dim" Text="setting · lowest · highest · count" />
+
+        <TextBlock Classes="h" Text="Fixed for the whole card" FontSize="12" />
+        <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+          <TextBlock Classes="lbl" Text="Power (%)" />
+          <NumericUpDown Grid.Column="1" x:Name="PowerBox" Minimum="0" Maximum="100" FormatString="0.##" ToolTip.Tip="Power for every square, when power is not swept." />
+          <TextBlock Grid.Row="1" Classes="lbl" Text="Speed (mm/s)" />
+          <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="SpeedBox" Minimum="1" Maximum="20000" FormatString="0.##" ToolTip.Tip="Speed for every square, when speed is not swept." />
+          <TextBlock Grid.Row="2" Classes="lbl" Text="Frequency (kHz)" />
+          <NumericUpDown Grid.Row="2" Grid.Column="1" x:Name="FreqBox" Minimum="1" Maximum="4000" FormatString="0.##" ToolTip.Tip="Frequency for every square, when frequency is not swept." />
+          <TextBlock Grid.Row="3" Classes="lbl" Text="Pulse width (ns)" />
+          <NumericUpDown Grid.Row="3" Grid.Column="1" x:Name="PwBox" Minimum="1" Maximum="1000" FormatString="0.##" ToolTip.Tip="Pulse width engraved on the card." />
+          <TextBlock Grid.Row="4" Classes="lbl" Text="Line density" />
+          <NumericUpDown Grid.Row="4" Grid.Column="1" x:Name="DensityBox" Minimum="1" Maximum="100000" FormatString="0.##" ToolTip.Tip="Line density exactly as MakeIt shows it." />
+          <TextBlock Grid.Row="5" Classes="lbl" Text="Passes" />
+          <NumericUpDown Grid.Row="5" Grid.Column="1" x:Name="PassesBox" Minimum="1" Maximum="50" FormatString="0" ToolTip.Tip="Number of passes." />
+          <TextBlock Grid.Row="6" Classes="lbl" Text="Focus / Z (mm)" />
+          <NumericUpDown Grid.Row="6" Grid.Column="1" x:Name="ZBox" Minimum="-20" Maximum="20" FormatString="0.##" ToolTip.Tip="Focus / Z exactly as MakeIt reports it. It is part of every square's recipe: MakeIt presets may not keep it." />
+        </Grid>
+
+        <TextBlock Classes="h" Text="The physical card" FontSize="12" />
+        <Grid ColumnDefinitions="*,170" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4">
+          <TextBlock Classes="lbl" Text="Card ID" />
+          <TextBox Grid.Column="1" x:Name="CardIdBox" ToolTip.Tip="Written or engraved on the card, so card, scan and atlas can always be matched up." />
+          <TextBlock Grid.Row="1" Classes="lbl" Text="Stock lot" />
+          <TextBox Grid.Row="1" Grid.Column="1" x:Name="LotBox" ToolTip.Tip="Which pack or shipment of blanks. A new lot can shift colours." />
+          <TextBlock Grid.Row="2" Classes="lbl" Text="Cleaning" />
+          <TextBox Grid.Row="2" Grid.Column="1" x:Name="CleaningBox" ToolTip.Tip="How the blank was cleaned before engraving, e.g. IPA wipe." />
+          <TextBlock Grid.Row="3" Classes="lbl" Text="MakeIt version" />
+          <TextBox Grid.Row="3" Grid.Column="1" x:Name="VersionBox" ToolTip.Tip="MakeIt version used to set up and send the card." />
+        </Grid>
+        <TextBlock x:Name="ProblemText" Foreground="#FF8A70" TextWrapping="Wrap" FontSize="12" />
+        </StackPanel>
+
+        <TextBlock Classes="h" Text="2. The image" />
+        <UniformGrid Columns="2" ColumnSpacing="4" RowSpacing="4">
+          <Button x:Name="OpenButton" Content="Open file…" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="A scan or photo of the card. Best: a flatbed scan, 600 dpi, PNG or TIFF, labels readable. You can also drop a file on the picture area." />
+          <Button x:Name="PasteButton" Content="Paste" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Use a picture or image file copied to the clipboard (Ctrl+V works too)." />
+          <Button x:Name="ScanButton" Content="Scan…" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Scan straight from a flatbed scanner. The scanner's own dialog opens: choose colour and 600 dpi there." />
+          <Button x:Name="CameraButton" Content="USB camera…" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Photograph the card with a USB camera, with a live preview." />
+          <Button x:Name="LumosButton" Content="Laser's camera" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Take a picture with the Lumos Ultra's built-in camera, with the card still on the bed where it was engraved." />
+          <Button x:Name="WatchFolderButton" Content="Scan folder…" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Choose the folder your scanner's own software saves into. New scans there open here by themselves." />
+        </UniformGrid>
+        <CheckBox x:Name="WatchBox" FontSize="12" Content="Open new scans from the scan folder"
+                  ToolTip.Tip="While this window is open, any new image saved in the scan folder is opened and searched straight away." />
+        <TextBlock x:Name="WatchText" Classes="dim" TextWrapping="Wrap" />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,4,0,0">
+          <TextBlock Classes="lbl" Text="This image is a" />
+          <ComboBox Grid.Column="1" x:Name="KindBox" HorizontalAlignment="Stretch"
+                    ToolTip.Tip="Flatbed scans light every card the same way, so their colours compare with each other. Photo colours depend on the light and the camera, so they are kept as estimates." />
+        </Grid>
+        <TextBlock x:Name="ScanInfo" Classes="dim" TextWrapping="Wrap" />
+
+        <TextBlock Classes="h" Text="3. Line up the grid" />
+        <TextBlock x:Name="StepText" TextWrapping="Wrap" FontSize="13" />
+        <UniformGrid Columns="2" ColumnSpacing="4" RowSpacing="4" Margin="0,4,0,0">
+          <Button x:Name="CropButton" Content="Crop to card" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Drag a box around the card on the picture. Everything outside it is ignored, and the squares are searched for again. Useful for the laser camera's whole-bed picture." />
+          <Button x:Name="FindButton" Content="Find automatically" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Let Atlas search the picture for the grid by itself, e.g. after cropping to the card. Undo puts your own placement back." />
+          <Button x:Name="TurnButton" Content="Turn 180°" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="The card is the other way up: swap first and last rows and columns." />
+          <Button x:Name="ResetButton" Content="Place by hand" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Put a fresh grid in the middle of the view to drag into place yourself." />
+          <Button x:Name="SnapButton" Content="Snap to squares" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Optional fine-tuning: nudge the boxes onto the centres of the squares nearest where they are now. Refused if it would move the grid away from where you put it." />
+          <Button x:Name="UndoButton" Content="Undo" HorizontalAlignment="Stretch" IsEnabled="False"
+                  ToolTip.Tip="Put the grid back where it was before the last change (Ctrl+Z)." />
+        </UniformGrid>
+        <Button x:Name="UndoCropButton" Content="Undo crop" IsVisible="False" FontSize="12"
+                ToolTip.Tip="Go back to the whole picture." />
+        <TextBlock x:Name="FitText" Classes="dim" TextWrapping="Wrap" />
+
+        <TextBlock Classes="h" Text="4. Check and save" />
+        <TextBlock Classes="dim"
+                   Text="Each square's suggested result is shown on the right. Click a swatch to change it (Good → No mark → Uneven → Damaged)." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Centre: the scan with the fitted grid drawn over it -->
+    <Border Grid.Column="1" Background="#0B0C0F" Padding="8">
+      <Grid x:Name="ViewHost" Background="Transparent" ClipToBounds="True" Focusable="True"
+            DragDrop.AllowDrop="True">
+        <Canvas x:Name="ImageLayer" IsHitTestVisible="False">
+          <Image x:Name="ScanImage" Stretch="Fill" />
+        </Canvas>
+        <Canvas x:Name="Overlay" IsHitTestVisible="False" />
+        <TextBlock x:Name="EmptyText" Classes="dim" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   TextWrapping="Wrap" TextAlignment="Center" MaxWidth="420"
+                   Text="Open, paste or drop a scan or photo of the card, or take one with the buttons on the left. The squares are found by themselves." />
+        <StackPanel x:Name="ViewTools" Spacing="4" Margin="6" HorizontalAlignment="Right" VerticalAlignment="Top" IsVisible="False">
+        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+          <Button x:Name="TurnPictureButton" Content="⟳ Turn picture" ToolTip.Tip="Turn the picture a quarter turn clockwise. For the laser's camera, remembered for next time." />
+          <Button x:Name="MirrorPictureButton" Content="⇋ Mirror" ToolTip.Tip="Mirror the picture left to right. For the laser's camera, remembered for next time." />
+          <Button x:Name="ZoomOutButton" Content="−" Width="34" ToolTip.Tip="Zoom out (or scroll down on the picture)." />
+          <Button x:Name="ZoomInButton" Content="+" Width="34" ToolTip.Tip="Zoom in (or scroll up on the picture)." />
+          <Button x:Name="ZoomGridButton" Content="Zoom to grid" ToolTip.Tip="Fill the view with the grid." />
+          <Button x:Name="FitViewButton" Content="Whole picture" ToolTip.Tip="Show the whole picture." />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+          <TextBlock x:Name="ViewLevelText" VerticalAlignment="Center" FontSize="12" Foreground="#C9D1DC" Margin="0,0,4,0" />
+          <Button x:Name="DarkerButton" Content="Darker" ToolTip.Tip="Show the picture darker, to see colours in a washed-out photo. Only changes what you see: the colours measured are from the picture as taken." />
+          <Button x:Name="BrighterButton" Content="Brighter" ToolTip.Tip="Show the picture brighter. Only changes what you see." />
+          <ToggleButton x:Name="StretchButton" Content="Stretch contrast" ToolTip.Tip="Spread the picture's tones over the whole range, so faint squares stand out. Only changes what you see." />
+        </StackPanel>
+        </StackPanel>
+        <Border x:Name="ViewHintBorder" Background="#CC0B0C0F" CornerRadius="4" Padding="8,4" Margin="6"
+                HorizontalAlignment="Left" VerticalAlignment="Bottom" IsVisible="False" IsHitTestVisible="False">
+          <TextBlock x:Name="ViewHint" Classes="dim" FontSize="12"
+                     Text="Scroll to zoom · drag the picture to move around · drag the grid to move it · drag a round corner handle onto the centre of its corner square · arrow keys move it one square · Ctrl+Z undoes" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Right: results -->
+    <ScrollViewer Grid.Column="2" Background="#111317">
+      <StackPanel Margin="12,0,12,12" Spacing="4">
+        <TextBlock Classes="h" Text="Results" />
+        <TextBlock x:Name="SummaryText" Classes="dim" />
+        <Canvas x:Name="Swatches" Height="10" HorizontalAlignment="Left" />
+        <TextBlock x:Name="HoverText" FontFamily="Consolas, Menlo, monospace" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Row="1" Grid.ColumnSpan="3" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button x:Name="CancelButton" Content="Cancel" ToolTip.Tip="Close without adding anything to the atlas." />
+          <Button x:Name="SaveButton" Content="Add to atlas" IsEnabled="False" Classes="accent"
+                  ToolTip.Tip="Add this card to the atlas as a grid, with one measured result per square." />
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" />
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

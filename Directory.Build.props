@@ -1,0 +1,43 @@
+<Project>
+  <!--
+    Shared settings for every project in the solution.
+
+    TargetFramework: net10.0, the current LTS (moved from net8.0 on 2026-10-01, ahead of
+    .NET 8's end of support in November 2026). Published builds are self-contained, so
+    users never install a runtime.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Only for building somewhere without the .NET 10 SDK (e.g. a sandbox): set the
+         environment variable ATLAS_TFM=net8.0. Releases are always net10.0. -->
+    <TargetFramework Condition="'$(ATLAS_TFM)' != ''">$(ATLAS_TFM)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <Authors>Lee Gillie</Authors>
+    <Company>Isotope NW</Company>
+    <Copyright>Copyright (c) 2026 Lee Gillie</Copyright>
+    <Version>0.1.0</Version>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <!-- Single source of truth for dependency versions. -->
+  <PropertyGroup>
+    <AvaloniaVersion>11.3.20</AvaloniaVersion>
+    <ImageSharpVersion>3.1.12</ImageSharpVersion>
+    <FlashCapVersion>1.12.0</FlashCapVersion>
+  </PropertyGroup>
+
+  <!--
+    Building over the network share (Benchy opening \\cortex\D\...): no .exe launchers.
+    Copying a freshly built, unsigned .exe onto Cortex over the share is refused (Bitdefender),
+    failing the build with "Unable to copy apphost.exe ... Access to the path ... is denied".
+    Visual Studio still runs and debugs the apps (through dotnet), and "dotnet X.dll" runs
+    them by hand. Builds on Cortex itself, and published releases, keep their .exe files.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectDirectory.StartsWith('\\'))">
+    <UseAppHost>false</UseAppHost>
+  </PropertyGroup>
+</Project>

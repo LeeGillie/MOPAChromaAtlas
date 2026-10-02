@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>MOPAChromaAtlas</AssemblyName>
+    <RootNamespace>MOPAChromaAtlas</RootNamespace>
+    <Product>MOPAChroma Atlas</Product>
+    <Description>Parametric colour mapping for MOPA fiber lasers.</Description>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\mopachroma.ico</ApplicationIcon>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Source artwork lives in /Art; these are sized copies made from it. -->
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <!--
+    Release notes, shown in the program (What's new) and offered once after an update.
+    CHANGELOG.md is updated before every release; "MOPAChromaAtlas (whats-new option)" exits 1 when its
+    newest section is not this Version, and the release workflow runs it.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\CHANGELOG.md" LogicalName="MOPAChromaAtlas.CHANGELOG.md" />
+    <!-- The safety notice every user accepts once (Views/SafetyWindow). -->
+    <EmbeddedResource Include="..\..\SAFETY.md" LogicalName="MOPAChromaAtlas.SAFETY.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="BuildDate" Value="$([System.DateTime]::UtcNow.ToString('yyyy-MM-dd'))" />
+    <AssemblyMetadata Include="AvaloniaVersion" Value="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" Condition="'$(Configuration)' == 'Debug'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- USB cameras on Windows (DirectShow / Media Foundation), Linux (V4L2) and macOS (AVFoundation). MIT, managed only. -->
+    <PackageReference Include="FlashCap" Version="$(FlashCapVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MOPAChroma.Core\MOPAChroma.Core.csproj" />
+    <!-- The laser's own camera, for photographing a card where it was engraved. -->
+    <ProjectReference Include="..\LumosUltra.Client\LumosUltra.Client.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,18 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MOPAChromaAtlas.Views.SplashWindow"
+        Width="960" Height="540"
+        SystemDecorations="None"
+        CanResize="False"
+        ShowInTaskbar="True"
+        WindowStartupLocation="CenterScreen"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Title="MOPAChroma Atlas">
+  <Grid>
+    <Image Source="avares://MOPAChromaAtlas/Assets/splash.jpg" Stretch="UniformToFill" />
+    <Border HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="14"
+            Background="#B0000000" CornerRadius="4" Padding="8,3">
+      <TextBlock x:Name="VersionText" Foreground="#E0E6F0" FontSize="12" />
+    </Border>
+  </Grid>
+</Window>

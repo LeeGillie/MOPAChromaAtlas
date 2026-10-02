@@ -1,0 +1,174 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="LumosUltra.Client.TestHarness.Views.MainWindow"
+        Title="LumosUltra.Client Test Harness"
+        Width="900" Height="720" MinWidth="700" MinHeight="500"
+        WindowStartupLocation="CenterScreen">
+
+  <DockPanel>
+    <!-- Connection -->
+    <Border DockPanel.Dock="Top" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,0,0,1">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBlock Text="Base address" VerticalAlignment="Center" />
+        <TextBox x:Name="BaseAddressBox" Width="260" Text="http://192.168.42.1:8080"
+                 ToolTip.Tip="The Lumos Ultra's local API address. Default is the USB RNDIS address; use the machine's Wi-Fi IP if connected that way instead." />
+        <Button x:Name="ConnectButton" Content="Connect"
+                ToolTip.Tip="Creates the client and checks /device/heartbeat." />
+        <TextBlock x:Name="ConnectionStatus" Text="Not connected" Classes="dim" VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" Background="#15171C" Padding="12,4" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <TextBlock x:Name="StatusText" Classes="dim" Text="Unofficial, community-reverse-engineered client. See LumosUltra.Client/PROVENANCE.md. Not affiliated with WeCreat." />
+    </Border>
+
+    <TabControl Margin="4">
+
+      <TabItem Header="Device">
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Classes="h" Text="Device info" />
+          <TextBlock Classes="dim" Text="Read-only. Safe to run at any time." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="GetDeviceInfoButton" Content="Get device info"
+                    ToolTip.Tip="GET /device/info" />
+            <Button x:Name="HeartbeatButton" Content="Check heartbeat"
+                    ToolTip.Tip="GET /device/heartbeat" />
+          </StackPanel>
+          <TextBox x:Name="DeviceOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Height="280" FontFamily="Consolas,monospace" />
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Job Status">
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Classes="h" Text="Job status" />
+          <TextBlock Classes="dim" Text="Read-only. Safe to run at any time. Uses POST, matching how the device's own MakeIt app polls it - not GET." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="GetJobStatusButton" Content="Get status once"
+                    ToolTip.Tip="POST /process/status" />
+            <CheckBox x:Name="AutoRefreshStatusBox" Content="Auto-refresh every 3s"
+                      ToolTip.Tip="Polls the same way MakeIt itself does while idle." />
+          </StackPanel>
+          <TextBox x:Name="JobStatusOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Height="140" FontFamily="Consolas,monospace" />
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Framing">
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Classes="h" Text="Framing preview" />
+          <TextBlock Classes="dim" TextWrapping="Wrap"
+                     Text="Puts the device into a 'previewing' state for the given file (confirmed via status codes). Does NOT confirm drawing an actual boundary trace - real-hardware testing produced at most isolated static dots, never a traced rectangle. Needs a file already staged on the device and its MD5." />
+          <TextBox x:Name="FramingFileBox" Watermark="Device path, e.g. /mnt/SDCARD/data/framing/gcode.gc"
+                   ToolTip.Tip="Path to the file already on the device to preview." />
+          <TextBox x:Name="FramingMd5Box" Watermark="Uppercase MD5 of that file's contents"
+                   ToolTip.Tip="Required by the device to confirm which file to trace." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button x:Name="StartFramingButton" Content="Start preview"
+                    ToolTip.Tip="POST /lumos/dev/framing_preview_start - confirmed to change device status; not confirmed to draw a boundary." />
+            <Button x:Name="StopFramingButton" Content="Stop preview"
+                    ToolTip.Tip="GET /lumos/dev/framing_preview_stop" />
+          </StackPanel>
+          <TextBox x:Name="FramingOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Height="120" FontFamily="Consolas,monospace" />
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Camera">
+        <DockPanel Margin="12">
+          <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
+            <TextBlock Classes="h" Text="Camera" />
+            <TextBlock Classes="dim" TextWrapping="Wrap"
+                       Text="Read-only. CONFIRMED on the Ultra: 4032x3024 JPEG, physically rotated 90 degrees from upright - shown here already rotated 90 degrees clockwise to match what you see standing at the machine. Saved files are the raw, unrotated bytes." />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button x:Name="TakePhotoButton" Content="Take photo"
+                      ToolTip.Tip="GET /camera/take_photo" />
+              <Button x:Name="SavePhotoButton" Content="Save as..." IsEnabled="False"
+                      ToolTip.Tip="Save the last captured photo to a file (raw bytes, not rotated)." />
+              <Button x:Name="ResetCameraViewButton" Content="Reset view"
+                      ToolTip.Tip="Reset zoom and pan (rotation stays fixed at 90 degrees)." />
+            </StackPanel>
+            <TextBlock x:Name="CameraStatus" Classes="dim" />
+          </StackPanel>
+          <Border x:Name="CameraViewport" BorderBrush="#2A2E36" BorderThickness="1" Background="#0B0C0F"
+                  ClipToBounds="True" Cursor="SizeAll"
+                  ToolTip.Tip="Scroll to zoom (anchored to the cursor), drag to pan.">
+            <!-- RenderTransformOrigin must be the top-left corner (0,0), not Avalonia's
+                 default center - the zoom/pan matrix built in code-behind assumes it is
+                 the only transform in effect; a hidden center-pivot on top of it was what
+                 caused zoom to visibly drift instead of anchoring to the cursor. -->
+            <Image x:Name="CameraImage" Stretch="Uniform" RenderTransformOrigin="0,0" />
+          </Border>
+        </DockPanel>
+      </TabItem>
+
+      <TabItem Header="Door / Safety">
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Classes="h" Text="Door status" />
+          <TextBlock Classes="dim" TextWrapping="Wrap"
+                     Text="Best-effort only - this endpoint's response shape is not confirmed by any known source, so a result of &quot;Unknown&quot; is expected on many machines, not a bug." />
+          <Button x:Name="CheckDoorButton" Content="Check door status"
+                  ToolTip.Tip="GET /process/door_status" />
+          <TextBlock x:Name="DoorStatusResult" FontSize="16" FontWeight="SemiBold" />
+          <TextBox x:Name="DoorOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Height="100" FontFamily="Consolas,monospace" />
+        </StackPanel>
+      </TabItem>
+
+      <TabItem Header="Job Upload">
+        <ScrollViewer>
+          <StackPanel Margin="12" Spacing="8">
+            <TextBlock Classes="h" Text="Upload and arm a job" />
+            <Border Classes="warn">
+              <TextBlock TextWrapping="Wrap" Foreground="#F0D090"
+                         Text="This uploads a real job to the machine and arms it. Arming alone does not fire the laser, but pressing the physical start button - or Start job below - will." />
+            </Border>
+            <TextBox x:Name="GCodeBox" Watermark="G-code text" AcceptsReturn="True" TextWrapping="NoWrap"
+                     FontFamily="Consolas,monospace" Height="160"
+                     ToolTip.Tip="The full job text to upload." />
+            <Button x:Name="LoadGCodeFileButton" Content="Load from file..." HorizontalAlignment="Left" />
+            <Grid ColumnDefinitions="Auto,*,Auto,*" RowDefinitions="Auto" ColumnSpacing="8" RowSpacing="6">
+              <TextBlock Text="FTP user" VerticalAlignment="Center" />
+              <TextBox Grid.Column="1" x:Name="FtpUserBox" Text="mbtc"
+                       ToolTip.Tip="Default credential documented by marcoreps/lumos_RE." />
+              <TextBlock Grid.Column="2" Text="FTP password" VerticalAlignment="Center" />
+              <TextBox Grid.Column="3" x:Name="FtpPasswordBox" Text="mbtc" PasswordChar="•" />
+            </Grid>
+            <CheckBox x:Name="RequireDoorClosedBox" Content="Require confirmed-closed door before arming (recommended)" IsChecked="True"
+                      ToolTip.Tip="The device does not enforce this itself - this is the library's own safeguard." />
+            <Button x:Name="UploadArmButton" Content="Upload &amp; arm"
+                    ToolTip.Tip="Uploads the G-code over FTP, then arms it via the HTTP API. Does not start the job." />
+            <Separator Margin="0,8" />
+            <CheckBox x:Name="ConfirmSafeToFireBox" Content="I have visually confirmed the beam path is clear and the lid/door is closed" />
+            <Button x:Name="StartJobButton" Content="Start job (fires the laser)" Classes="danger" IsEnabled="False"
+                    ToolTip.Tip="POST /process/start. This will actually run the armed job." />
+            <TextBox x:Name="JobUploadOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                     Height="140" FontFamily="Consolas,monospace" />
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <TabItem Header="Raw">
+        <StackPanel Margin="12" Spacing="8">
+          <TextBlock Classes="h" Text="Raw request" />
+          <TextBlock Classes="dim" TextWrapping="Wrap"
+                     Text="For any endpoint not yet wrapped by the library. See LumosUltra.Client/README.md for the known-but-unwrapped list." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ComboBox x:Name="RawMethodBox" SelectedIndex="0">
+              <ComboBoxItem>GET</ComboBoxItem>
+              <ComboBoxItem>POST</ComboBoxItem>
+            </ComboBox>
+            <TextBox x:Name="RawPathBox" Width="420" Watermark="/device/light/status" />
+            <Button x:Name="RawSendButton" Content="Send" />
+          </StackPanel>
+          <TextBox x:Name="RawBodyBox" Watermark="JSON body (POST only)" AcceptsReturn="True" Height="80" FontFamily="Consolas,monospace" />
+          <TextBox x:Name="RawOutput" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                   Height="220" FontFamily="Consolas,monospace" />
+        </StackPanel>
+      </TabItem>
+
+
+    </TabControl>
+  </DockPanel>
+</Window>

@@ -1,0 +1,114 @@
+# Builds and tests MOPAChroma Atlas on all three desktop platforms on every push to main.
+#
+# The point is the matrix: Atlas is developed on Windows and claims Windows, macOS and Linux.
+# A red macOS job here is worth more than a green one, because it is the only thing standing
+# between a wrong README and a stranger discovering it. The laser, cameras and scanners are
+# not exercised (runners have none); the planner, reader, exports, updater and release notes
+# are, and on Linux the real main window is opened and captured.
+
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  AVALONIA_TELEMETRY_OPTOUT: '1'
+
+jobs:
+  build:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      # Every document, script and workflow has to be visible in Visual Studio.
+      - name: Solution lists every file
+        if: runner.os == 'Linux'
+        run: python3 tools/check_solution.py
+
+      - name: Build
+        shell: bash
+        run: dotnet build MOPAChromaAtlas.slnx -c Release --nologo -warnaserror
+
+      # Core (planner, reader, card numbers, sheet reading, exports), the laser client's
+      # safety guards, and the updater (install tests run on Linux and macOS).
+      - name: Test
+        shell: bash
+        run: dotnet test MOPAChromaAtlas.slnx -c Release --no-build --nologo
+
+      - name: Locate the program
+        id: exe
+        shell: bash
+        run: |
+          d="src/MOPAChromaAtlas/bin/Release/net10.0"
+          if [ "${{ runner.os }}" = "Windows" ]; then echo "path=$d/MOPAChromaAtlas.exe" >> "$GITHUB_OUTPUT"
+          else echo "path=$d/MOPAChromaAtlas" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Report the version
+        shell: bash
+        run: '"${{ steps.exe.outputs.path }}" --version | grep -E "^MOPAChromaAtlas [0-9]+\.[0-9]+"'
+
+      # The newest section of CHANGELOG.md must be this version's, so a release cannot ship
+      # with the previous release's notes inside it.
+      - name: Release notes are this version's
+        shell: bash
+        run: '"${{ steps.exe.outputs.path }}" --whats-new'
+
+      - name: Install a virtual display and font stack (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libfontconfig1 libx11-6 libice6 libsm6 fonts-dejavu-core
+
+      - name: Open the real window (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a --server-args="-screen 0 1600x1000x24" \
+            "${{ steps.exe.outputs.path }}" --demo --screenshot main-${{ matrix.os }}.png
+          test -s "main-${{ matrix.os }}.png"
+
+      - name: Open the real window (macOS and Windows)
+        if: runner.os != 'Linux'
+        shell: bash
+        run: |
+          "${{ steps.exe.outputs.path }}" --demo --screenshot "main-${{ matrix.os }}.png"
+          test -s "main-${{ matrix.os }}.png"
+
+      - name: User guide PDF (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 -m pip install --quiet markdown
+          python3 docs/build_guide.py --out guide-ci.pdf
+
+      - name: Bundle layout (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python3 packaging/make_bundle.py --rid linux-x64 --version 0.0.0 \
+            --binary "${{ steps.exe.outputs.path }}" --guide guide-ci.pdf --dist bundle-ci
+          unzip -l bundle-ci/MOPAChromaAtlas-0.0.0-linux-x64.zip
+          unzip -Z bundle-ci/MOPAChromaAtlas-0.0.0-linux-x64.zip | grep -E '^-rwx.* MOPAChromaAtlas/MOPAChromaAtlas$'
+
+      - name: Upload artefacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: output-${{ matrix.os }}
+          path: |
+            main-*.png
+            guide-ci.pdf
+          if-no-files-found: warn

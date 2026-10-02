@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Standalone .NET client for the WeCreat Lumos Ultra's local network API. No
+    dependency on MOPAChroma.Core or anything MOPAChroma-specific - this project is
+    meant to be referenced directly by other repos (e.g. DepthView) as well as by
+    MOPAChromaAtlas from this solution. See PROVENANCE.md before trusting any of it
+    against real hardware.
+  -->
+  <PropertyGroup>
+    <RootNamespace>LumosUltra.Client</RootNamespace>
+    <AssemblyName>LumosUltra.Client</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Unofficial, community-reverse-engineered client for the WeCreat Lumos Ultra's local HTTP API. Not affiliated with or endorsed by WeCreat.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LumosUltra.Client.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- .NET no longer ships FtpWebRequest; the device's job upload path is literal FTP. -->
+    <PackageReference Include="FluentFTP" Version="52.1.0" />
+  </ItemGroup>
+
+</Project>

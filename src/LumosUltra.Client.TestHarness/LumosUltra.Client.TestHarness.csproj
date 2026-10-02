@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A small Avalonia app for manually exercising LumosUltra.Client against a real
+    machine, one feature at a time. This is a debugging/bring-up tool, not a product -
+    see its README for what that means for how carefully to trust it.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>LumosUltra.Client.TestHarness</AssemblyName>
+    <RootNamespace>LumosUltra.Client.TestHarness</RootNamespace>
+    <Product>LumosUltra.Client Test Harness</Product>
+    <Description>Manual, segmented test harness for LumosUltra.Client.</Description>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" Condition="'$(Configuration)' == 'Debug'" />
+    <!-- Same imaging library and version as MOPAChroma.Core/DepthView: used here only to
+         bake the confirmed 90-degree camera rotation into real pixels before display,
+         since rotating the control's RenderTransform post-layout misaligns badly against
+         a landscape source and a differently-shaped viewport. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="$(ImageSharpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LumosUltra.Client\LumosUltra.Client.csproj" />
+  </ItemGroup>
+
+</Project>

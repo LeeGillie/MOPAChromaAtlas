@@ -1,0 +1,191 @@
+# Publishes MOPAChroma Atlas for seven platforms and attaches the zips, the user guide PDF and
+# the checksums to a GitHub Release.
+#
+# Triggered by pushing a version tag that matches <Version> in Directory.Build.props:
+#
+#     git tag -a v0.1.0 -m "MOPAChroma Atlas 0.1.0"
+#     git push origin v0.1.0
+#
+# Or run manually from the Actions tab with dry_run left on: it builds and uploads everything
+# as workflow artefacts WITHOUT creating a release. Use that to prove the matrix works before
+# spending a tag on it.
+#
+# Each platform ships as MOPAChromaAtlas-<version>-<rid>.zip holding one MOPAChromaAtlas/
+# folder (the program, the user guide PDF, README.txt, LICENSE.txt; a MOPAChromaAtlas.app on
+# macOS), built by packaging/make_bundle.py. Those names are a contract with the in-place
+# updater (src/MOPAChromaAtlas/Updates/UpdateService.cs), which finds its platform's zip on the
+# latest release by name and verifies it against the digest GitHub publishes for the asset,
+# with SHA256SUMS.txt as the fallback. Rename either and every installed copy stops updating.
+#
+# Windows and Linux cross-compile on one Linux runner. macOS builds on a macOS runner, because
+# Apple silicon will not run unsigned native code at all: the .app is signed ad hoc there.
+
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build and upload artefacts without creating a release'
+        type: boolean
+        default: true
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  AVALONIA_TELEMETRY_OPTOUT: '1'
+
+jobs:
+  guide:
+    name: User guide PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      # docs/USER-GUIDE.md is the authoritative guide; the PDF is printed from it by Chrome,
+      # which the Ubuntu runner already has. DejaVu covers the arrows and ticks the guide uses.
+      - name: Build the PDF
+        run: |
+          sudo apt-get install -y -qq fonts-dejavu-core >/dev/null
+          python -m pip install --quiet markdown
+          version="${GITHUB_REF_NAME#v}"
+          case "$version" in refs/*|main|"") version="" ;; esac
+          python docs/build_guide.py ${version:+--version "$version"} --out dist/MOPAChroma-Atlas-User-Guide.pdf
+      - uses: actions/upload-artifact@v7
+        with:
+          name: user-guide
+          path: dist/MOPAChroma-Atlas-User-Guide.pdf
+          if-no-files-found: error
+
+  publish:
+    name: ${{ matrix.rid }}
+    needs: guide
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: win-x64,     os: ubuntu-latest }
+          - { rid: win-x86,     os: ubuntu-latest }
+          - { rid: win-arm64,   os: ubuntu-latest }
+          - { rid: linux-x64,   os: ubuntu-latest }
+          - { rid: linux-arm64, os: ubuntu-latest }
+          - { rid: osx-x64,     os: macos-latest }
+          - { rid: osx-arm64,   os: macos-latest }
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: user-guide
+          path: guide
+
+      # A tag must name the version the program reports, or the updater would loop: it would
+      # see the tag as newer, install a program that says otherwise, and refuse it.
+      - name: Tag matches the version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          want="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -1)"
+          [ "${GITHUB_REF_NAME#v}" = "$want" ] || { echo "::error::tag $GITHUB_REF_NAME does not match <Version>$want</Version>"; exit 1; }
+
+      - name: Publish ${{ matrix.rid }}
+        run: |
+          dotnet publish src/MOPAChromaAtlas/MOPAChromaAtlas.csproj \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -p:DebugType=none \
+            -o out/${{ matrix.rid }} \
+            --nologo -v quiet
+
+      - name: Bundle
+        id: bundle
+        run: |
+          version="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -1)"
+          if [[ "${{ matrix.rid }}" == win-* ]]; then bin="out/${{ matrix.rid }}/MOPAChromaAtlas.exe"
+          else bin="out/${{ matrix.rid }}/MOPAChromaAtlas"; fi
+          test -f "$bin" || { echo "::error::publish produced no binary at $bin"; ls -R out; exit 1; }
+          python3 packaging/make_bundle.py --rid ${{ matrix.rid }} --version "$version" \
+            --binary "$bin" --guide guide/MOPAChroma-Atlas-User-Guide.pdf --dist dist
+          echo "zip=MOPAChromaAtlas-${version}-${{ matrix.rid }}.zip" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # --version is exactly what the updater runs on a freshly downloaded copy before it will
+      # install it, and --whats-new fails unless the built-in notes are this version's. Each
+      # runner can execute its own architecture only, so linux-x64 and osx-arm64 are checked.
+      - name: Smoke test the Linux bundle
+        if: matrix.rid == 'linux-x64'
+        run: |
+          mkdir smoke && (cd smoke && unzip -q "../dist/${{ steps.bundle.outputs.zip }}")
+          test -x smoke/MOPAChromaAtlas/MOPAChromaAtlas
+          test -s smoke/MOPAChromaAtlas/MOPAChroma-Atlas-User-Guide.pdf
+          smoke/MOPAChromaAtlas/MOPAChromaAtlas --version | tee v.txt
+          grep -qx "MOPAChromaAtlas ${{ steps.bundle.outputs.version }}" v.txt
+          smoke/MOPAChromaAtlas/MOPAChromaAtlas --whats-new
+
+      - name: Smoke test the macOS bundle
+        if: matrix.rid == 'osx-arm64'
+        run: |
+          mkdir smoke && (cd smoke && unzip -q "../dist/${{ steps.bundle.outputs.zip }}")
+          codesign --verify --strict --verbose=2 smoke/MOPAChromaAtlas/MOPAChromaAtlas.app
+          smoke/MOPAChromaAtlas/MOPAChromaAtlas.app/Contents/MacOS/MOPAChromaAtlas --version
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: MOPAChromaAtlas-${{ matrix.rid }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Create the release
+    needs: [guide, publish]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: staged
+          merge-multiple: true
+
+      # The page leads with this version's section of CHANGELOG.md (the same notes the program
+      # shows), then the evergreen download and safety notes.
+      - name: Release notes
+        run: |
+          python3 packaging/release_notes.py "${GITHUB_REF_NAME#v}" > notes.md
+          cat notes.md
+
+      # Unsigned builds make checksums worth more than usual: they are the only way a user can
+      # tell a genuine download from a tampered one. The updater prefers the per-asset digest
+      # GitHub computes itself, and falls back to this file.
+      - name: Checksums
+        run: |
+          cd staged
+          sha256sum * > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" staged/* \
+            --title "MOPAChroma Atlas ${GITHUB_REF_NAME#v}" \
+            --notes-file notes.md \
+            --verify-tag

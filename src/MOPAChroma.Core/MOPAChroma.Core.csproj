@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    UI-free engine: colour science, the MOPA parameter model, grid planning and
+    export, and the atlas store. Everything here is testable without a window, and
+    a future command-line front end can use it unchanged.
+  -->
+  <PropertyGroup>
+    <RootNamespace>MOPAChroma</RootNamespace>
+    <AssemblyName>MOPAChroma.Core</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MOPAChroma.Core.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Same imaging library and version as DepthView: reads PNG, TIFF, JPEG, BMP on every platform. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="$(ImageSharpVersion)" />
+  </ItemGroup>
+
+</Project>

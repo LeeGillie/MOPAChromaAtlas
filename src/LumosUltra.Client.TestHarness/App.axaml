@@ -1,0 +1,37 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LumosUltra.Client.TestHarness.App"
+             RequestedThemeVariant="Dark">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="TextBlock.h">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Margin" Value="0,12,0,4" />
+      <Setter Property="Foreground" Value="#9FB4FF" />
+    </Style>
+    <Style Selector="TextBlock.dim">
+      <Setter Property="Foreground" Value="#8A8F99" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="TextBlock.ok">
+      <Setter Property="Foreground" Value="#7FE0A0" />
+    </Style>
+    <Style Selector="TextBlock.err">
+      <Setter Property="Foreground" Value="#FF8A8A" />
+    </Style>
+    <Style Selector="Button.danger">
+      <Setter Property="Background" Value="#5A1F1F" />
+      <Setter Property="BorderBrush" Value="#FF6B6B" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Border.warn">
+      <Setter Property="Background" Value="#3A2A10" />
+      <Setter Property="BorderBrush" Value="#E0A030" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="10,6" />
+    </Style>
+  </Application.Styles>
+</Application>

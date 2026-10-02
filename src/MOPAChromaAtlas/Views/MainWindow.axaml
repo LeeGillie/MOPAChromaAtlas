@@ -1,0 +1,254 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MOPAChromaAtlas.Views.MainWindow"
+        Title="MOPAChroma Atlas"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Width="1280" Height="820" MinWidth="980" MinHeight="620"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="300,*,320">
+
+    <!-- Header -->
+    <Border Grid.ColumnSpan="3" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,0,0,1">
+      <StackPanel Spacing="8">
+      <DockPanel>
+        <Image Source="avares://MOPAChromaAtlas/Assets/icon-256.png" Width="32" Height="32" Margin="0,0,10,0"
+               ToolTip.Tip="MOPAChroma Atlas — an Isotope NW tool" />
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="MOPAChroma Atlas" FontSize="17" FontWeight="SemiBold" />
+          <TextBlock Classes="dim" Text="Parametric colour mapping for MOPA fiber lasers" />
+          <StackPanel Orientation="Horizontal" Spacing="2" Margin="0,2,0,0">
+            <TextBlock x:Name="VersionText" Classes="dim" VerticalAlignment="Center" FontSize="12"
+                       ToolTip.Tip="The version of MOPAChroma Atlas you are running, and the date it was built." />
+            <Button x:Name="WhatsNewButton" Classes="link" Content="What's new"
+                    ToolTip.Tip="Release notes for this version and earlier ones. Built into the program, so they work offline." />
+            <Button x:Name="GuideButton" Classes="link" Content="User guide"
+                    ToolTip.Tip="Open the user guide (PDF): the ideas in plain words and step-by-step recipes." />
+            <Button x:Name="SafetyButton" Classes="link" Content="Safety"
+                    ToolTip.Tip="The safety notice and disclaimer: this program controls a Class 4 laser." />
+            <Button x:Name="ReportButton" Classes="link" Content="Report a problem"
+                    ToolTip.Tip="Open the project's GitHub issues page to report a bug or suggest a feature. Discussion and ideas are welcome in the Facebook group 'Lumos Ultra Owners &amp; Makers — Independent User Group'." />
+            <Button x:Name="CheckUpdatesButton" Classes="link" Content="Check for updates"
+                    ToolTip.Tip="Ask GitHub now whether a newer release exists. Atlas also asks by itself, at most once a day." />
+          </StackPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+          <TextBlock x:Name="AtlasPathText" Classes="dim" VerticalAlignment="Center"
+                     ToolTip.Tip="Where this atlas is saved. Every change is saved immediately." />
+          <Button x:Name="NewAtlasButton" Content="Start a new atlas…" FontSize="12"
+                  ToolTip.Tip="Put this atlas aside (renamed with today's date, nothing deleted) and start an empty one. Camera calibration and settings are kept." />
+        </StackPanel>
+      </DockPanel>
+
+      <!-- Update bar: shown only when a newer release exists, or right after an update. -->
+      <Border x:Name="UpdateBar" IsVisible="False" Background="#16301F" BorderBrush="#2E6B44" BorderThickness="1" CornerRadius="4" Padding="10,6">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Button x:Name="UpdateNotesButton" Content="What's new" FontSize="12" />
+            <Button x:Name="UpdateSkipButton" Content="Skip this version" FontSize="12"
+                    ToolTip.Tip="Do not mention this version again. The next one will be offered." />
+            <Button x:Name="UpdateDownloadButton" Content="Download page" FontSize="12"
+                    ToolTip.Tip="Open the release page in your web browser, to download it by hand." />
+            <Button x:Name="UpdateInstallButton" Content="Update now" FontSize="12" Classes="accent"
+                    ToolTip.Tip="Download the new version, check it against its published checksum, start it once to be sure it runs, then replace this copy and restart. If any check fails, nothing is changed. Your atlas is not in the program folder and is never touched." />
+            <Button x:Name="UpdateHideButton" Content="✕" FontSize="12"
+                    ToolTip.Tip="Hide the bar for now. It comes back next time Atlas starts." />
+          </StackPanel>
+          <ProgressBar x:Name="UpdateProgress" DockPanel.Dock="Right" Width="140" IsVisible="False" Margin="0,0,10,0" VerticalAlignment="Center" />
+          <TextBlock x:Name="UpdateText" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="#CFEBD7" />
+        </DockPanel>
+      </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Left: setup and planning -->
+    <ScrollViewer Grid.Row="1" Grid.Column="0" Background="#111317">
+      <StackPanel Margin="12,0,12,12" Spacing="4">
+        <TextBlock Classes="h" Text="Material" />
+        <ComboBox x:Name="MaterialBox" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="The material being mapped. Grade and finish are part of the identity: results for different ones are never mixed." />
+        <Expander Header="Add a material" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Define a new material, including its grade and surface finish.">
+          <StackPanel Spacing="6">
+            <TextBox x:Name="NewMatName" Watermark="Name, e.g. Stainless steel" ToolTip.Tip="Display name for the material." />
+            <ComboBox x:Name="NewMatFamily" HorizontalAlignment="Stretch" ToolTip.Tip="Material family." />
+            <TextBox x:Name="NewMatGrade" Watermark="Grade, e.g. 304" ToolTip.Tip="Alloy or grade. 304 and 316 colour differently." />
+            <TextBox x:Name="NewMatFinish" Watermark="Finish, e.g. brushed" ToolTip.Tip="Surface finish. Brushed and mirror colour differently." />
+            <ComboBox x:Name="NewMatForm" HorizontalAlignment="Stretch"
+                      ToolTip.Tip="The blank's shape. A big sheet, a business card and a coin colour differently with the same settings: make each its own material." />
+            <NumericUpDown x:Name="NewMatThickness" Watermark="Thickness (mm)" Minimum="0" Maximum="50" Increment="0.1" FormatString="0.##"
+                           ToolTip.Tip="Blank thickness. Thickness changes how fast heat leaves the surface, so it changes colours." />
+            <TextBox x:Name="NewMatSupplier" Watermark="Supplier" ToolTip.Tip="Where the blanks come from." />
+            <TextBox x:Name="NewMatSku" Watermark="SKU / product code" ToolTip.Tip="Supplier's product code, so a reorder gets the same stock." />
+            <Button x:Name="AddMaterialButton" Content="Add material" ToolTip.Tip="Add this material to the atlas and select it." />
+          </StackPanel>
+        </Expander>
+
+        <TextBlock Classes="h" Text="Laser" />
+        <ComboBox x:Name="SourceBox" HorizontalAlignment="Stretch" ToolTip.Tip="The MOPA source. Its limits bound every setting the planner proposes." />
+        <ComboBox x:Name="LensBox" HorizontalAlignment="Stretch" ToolTip.Tip="The field lens in use." />
+        <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+          <TextBlock Text="Spot diameter (µm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Column="1" x:Name="SpotBox" Width="120" Minimum="5" Maximum="200" Increment="1" FormatString="0"
+                         ToolTip.Tip="Laser spot diameter at focus. Every overlap and fluence figure depends on it: measure it rather than trust the nominal value." />
+        </Grid>
+        <TextBlock x:Name="SourceNote" Classes="dim" />
+
+        <TextBlock Classes="h" Text="Test grid" />
+        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+          <TextBlock Text="Coupon width (mm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Column="1" x:Name="CouponWidthBox" Width="120" Minimum="10" Maximum="500" Value="86" Increment="1" FormatString="0.#"
+                         ToolTip.Tip="Width of the physical coupon stock. Remembered per material." />
+          <TextBlock Grid.Row="1" Text="Coupon height (mm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="CouponHeightBox" Width="120" Minimum="10" Maximum="500" Value="54" Increment="1" FormatString="0.#"
+                         ToolTip.Tip="Height of the physical coupon stock. Remembered per material." />
+          <TextBlock Grid.Row="2" Text="Cell size (mm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Row="2" Grid.Column="1" x:Name="CellBox" Width="120" Minimum="2" Maximum="50" Value="8" Increment="0.5" FormatString="0.0"
+                         ToolTip.Tip="Side of each square cell. Big enough to measure colour reliably; 8 mm suits most colorimeters. Remembered per material." />
+          <TextBlock Grid.Row="3" Text="Gap (mm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Row="3" Grid.Column="1" x:Name="GapBox" Width="120" Minimum="0.5" Maximum="20" Value="2" Increment="0.5" FormatString="0.0"
+                         ToolTip.Tip="Space between cells, so heat from one does not colour its neighbour. Remembered per material." />
+          <TextBlock Grid.Row="4" Text="Corner radius (mm)" VerticalAlignment="Center" />
+          <NumericUpDown Grid.Row="4" Grid.Column="1" x:Name="CornerRadiusBox" Width="120" Minimum="0" Maximum="50" Value="3" Increment="0.5" FormatString="0.#"
+                         ToolTip.Tip="Corner radius of the exported reference frame, to match the coupon stock's own rounded corners. 3mm (R3) is standard for 86x54mm metal card blanks; 0 for square corners. Remembered per material." />
+        </Grid>
+        <TextBlock x:Name="GridFitText" Classes="dim" TextWrapping="Wrap"
+                   ToolTip.Tip="Columns and rows the planner will use, computed from the coupon size, cell size and gap above - including the label band each row reserves for its engraved id." />
+
+        <Expander x:Name="RangesExpander" Header="Planning ranges" IsExpanded="True" HorizontalAlignment="Stretch" Margin="0,8,0,0"
+                  ToolTip.Tip="The settings the planner may use for this material. Every planned cell stays inside these ranges, and under the heat limit, which always applies.">
+          <StackPanel Spacing="4">
+            <Grid ColumnDefinitions="*,Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+              <TextBlock Grid.Row="0" Text="Power (%)" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="0" Grid.Column="1" x:Name="RngPowerMin" Width="64" Minimum="0" Maximum="100" Increment="1" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Lowest. Power the planner may use, % of the laser's rated power." />
+              <NumericUpDown Grid.Row="0" Grid.Column="2" x:Name="RngPowerMax" Width="64" Minimum="0" Maximum="100" Increment="1" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Highest. Power the planner may use, % of the laser's rated power." />
+              <TextBlock Grid.Row="1" Text="Freq. (kHz)" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="1" Grid.Column="1" x:Name="RngFreqMin" Width="64" Minimum="1" Maximum="4000" Increment="10" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Lowest. Pulse frequency the planner may use." />
+              <NumericUpDown Grid.Row="1" Grid.Column="2" x:Name="RngFreqMax" Width="64" Minimum="1" Maximum="4000" Increment="10" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Highest. Pulse frequency the planner may use." />
+              <TextBlock Grid.Row="2" Text="Pulse (ns)" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="2" Grid.Column="1" x:Name="RngPwMin" Width="64" Minimum="1" Maximum="500" Increment="1" FormatString="0.#" ShowButtonSpinner="False" ToolTip.Tip="Lowest. Pulse widths the planner may use: the laser's own values inside this span (e.g. 4-7 gives 4 and 6 on a source that offers 2, 4, 6, 8…)." />
+              <NumericUpDown Grid.Row="2" Grid.Column="2" x:Name="RngPwMax" Width="64" Minimum="1" Maximum="500" Increment="1" FormatString="0.#" ShowButtonSpinner="False" ToolTip.Tip="Highest. Pulse widths the planner may use: the laser's own values inside this span (e.g. 4-7 gives 4 and 6 on a source that offers 2, 4, 6, 8…)." />
+              <TextBlock Grid.Row="3" Text="Speed (mm/s)" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="3" Grid.Column="1" x:Name="RngSpeedMin" Width="64" Minimum="10" Maximum="10000" Increment="50" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Lowest. Marking speed the planner may use." />
+              <NumericUpDown Grid.Row="3" Grid.Column="2" x:Name="RngSpeedMax" Width="64" Minimum="10" Maximum="10000" Increment="50" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Highest. Marking speed the planner may use." />
+              <TextBlock Grid.Row="4" Text="Lines (/cm)" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="4" Grid.Column="1" x:Name="RngDensMin" Width="64" Minimum="10" Maximum="5000" Increment="50" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Lowest. Line density (lines per cm) the planner may use. Denser lines put more heat into each area." />
+              <NumericUpDown Grid.Row="4" Grid.Column="2" x:Name="RngDensMax" Width="64" Minimum="10" Maximum="5000" Increment="50" FormatString="0" ShowButtonSpinner="False" ToolTip.Tip="Highest. Line density (lines per cm) the planner may use. Denser lines put more heat into each area." />
+              <TextBlock Grid.Row="5" Text="Passes up to" VerticalAlignment="Center" FontSize="12" />
+              <ComboBox Grid.Row="5" Grid.Column="1" x:Name="RngPasses" Width="64"
+                        ToolTip.Tip="Most passes the planner may use on a cell: 1, 2 or 3. Each pass adds the same heat again, and the time." />
+              <TextBlock Grid.Row="6" Text="Least J/mm²" VerticalAlignment="Center" FontSize="12" />
+              <NumericUpDown Grid.Row="6" Grid.Column="1" x:Name="RngHeatMin" Width="64" Minimum="0" Maximum="20" Increment="0.1" FormatString="0.##" ShowButtonSpinner="False"
+                             ToolTip.Tip="Cells with less heat per area than this are not planned: they only leave no mark. About 0.5 J/mm² on stainless; other metals may colour with less." />
+            </Grid>
+            <Button x:Name="RangesResetButton" Content="Starting ranges" FontSize="12"
+                    ToolTip.Tip="Back to the starting ranges: power 30-90 %, frequency 140-400 kHz, pulse 4-7 ns, speed 50-5000 mm/s, 150-5000 lines/cm, up to 3 passes, at least 0.5 J/mm²." />
+            <TextBlock Classes="dim" Text="Saved with this material. The heat limit (40 J/mm² per cell, 45 for any spot of a job) always applies on top." />
+          </StackPanel>
+        </Expander>
+        <Button x:Name="SeedButton" Content="Plan seed grid" HorizontalAlignment="Stretch" Margin="0,10,0,0"
+                ToolTip.Tip="Plan a first survey of this material: cells spread as far apart as possible in physics space, with no two physically equivalent." />
+        <Button x:Name="RefineButton" Content="Plan refinement grid" HorizontalAlignment="Stretch"
+                ToolTip.Tip="Plan the next grid from the results so far: cells go where colour changes, where the usable region ends, and where nothing is known. Mapped and dead regions get none." />
+        <Button x:Name="PaletteButton" Content="Palette and exports…" HorizontalAlignment="Stretch"
+                ToolTip.Tip="Every colour made on this material with this laser and lens (good cells only, repeated colours first), and the exports: a MakeIt palette project and a LightBurn material library." />
+        <Button x:Name="SendButton" Content="Send to laser…" HorizontalAlignment="Stretch" Margin="0,6,0,0" Classes="accent"
+                ToolTip.Tip="Engrave this grid on the Lumos Ultra: Atlas builds and arms the job, waits for you to press Start on the machine, then photographs the card and reads every cell for you to check." />
+        <Button x:Name="ReadGridButton" Content="Read this grid from an image…" HorizontalAlignment="Stretch"
+                ToolTip.Tip="Record this grid's results from a scan or photo of its card: the cells are found and read automatically, for you to check." />
+        <Button x:Name="ReadSheetButton" Content="Read every grid on a scanned sheet…" HorizontalAlignment="Stretch" Margin="0,6,0,0"
+                ToolTip.Tip="Open a scan or sharp photo of a whole sheet: every Atlas grid on it (with corner crosses and a number) that shows clearly is found, matched by its number and read in one go. The newest reading of each cell is the one the palette and exports use." />
+        <Button x:Name="ImportScanButton" Content="Import MakeIt test-card scan…" HorizontalAlignment="Stretch" Margin="0,6,0,0"
+                ToolTip.Tip="Read a card made with MakeIt's colour test or Material Testing Array from a flatbed scan: pick or describe the card, click three squares, check the results, and add every square to the atlas." />
+
+        <TextBlock Classes="h" Text="Grids for this material" />
+        <ComboBox x:Name="GridsBox" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Every grid planned for this material, source and lens. Pick one to review or record its results." />
+        <TextBlock x:Name="ProgressText" Classes="dim" />
+        <TextBlock x:Name="PlannedText" Classes="dim"
+                   ToolTip.Tip="Cards the atlas has planned that have not been scanned yet. The scan importer offers them." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Centre: grid preview -->
+    <Border Grid.Row="1" Grid.Column="1" Background="#0B0C0F" Padding="16">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" x:Name="GridTitle" FontSize="15" FontWeight="SemiBold" Margin="0,0,0,2" />
+        <TextBlock DockPanel.Dock="Top" x:Name="GridSubtitle" Classes="dim" Margin="0,0,0,10" />
+        <TextBlock DockPanel.Dock="Bottom" x:Name="GridHint" Classes="dim" Margin="0,10,0,0" TextWrapping="Wrap" />
+        <Border x:Name="CanvasHost" ClipToBounds="True">
+          <Canvas x:Name="GridCanvas" />
+        </Border>
+      </DockPanel>
+    </Border>
+
+    <!-- Right: selected cell and colour search -->
+    <ScrollViewer Grid.Row="1" Grid.Column="2" Background="#111317">
+      <StackPanel Margin="12,0,12,12" Spacing="4">
+        <TextBlock Classes="h" Text="Selected cell" />
+        <TextBlock x:Name="CellTitle" FontSize="15" FontWeight="SemiBold" Text="—" />
+        <TextBlock x:Name="CellSettings" FontFamily="Consolas, Menlo, monospace" FontSize="12" TextWrapping="Wrap"
+                   ToolTip.Tip="The settings to type into MakeIt for this cell, and the physics they amount to." />
+        <TextBlock x:Name="CellReason" Classes="dim" ToolTip.Tip="Why the planner chose this cell." />
+        <TextBlock x:Name="RepeatText" FontSize="12" TextWrapping="Wrap"
+                   ToolTip.Tip="A colour counts as verified only when the same settings, engraved on another card and measured the same way, came out within ΔE00 3." />
+        <Button x:Name="MicroGridButton" Content="Plan micro-grid around this cell" HorizontalAlignment="Stretch"
+                ToolTip.Tip="A new grid around this cell: power ±5 points and speed ±22.5 %, everything else the same. One cell repeats this one, to check the colour repeats; nothing else already engraved is repeated. Send it to the laser like any grid." />
+
+        <TextBlock Classes="h" Text="Result" />
+        <DockPanel>
+          <Border x:Name="ResultSwatch" DockPanel.Dock="Left" Width="32" Height="32" CornerRadius="4" Margin="0,0,8,0"
+                  BorderBrush="#40FFFFFF" BorderThickness="1" />
+          <TextBlock x:Name="ResultText" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"
+                     ToolTip.Tip="What this cell came out as, from the last reading (a scan or photo of the card)." />
+        </DockPanel>
+        <Expander x:Name="ManualExpander" Header="Correct by hand" HorizontalAlignment="Stretch" Margin="0,4,0,0"
+                  ToolTip.Tip="Readings normally come from reading the card's picture. Use this only to correct the outcome, or to record a reading from a colour instrument.">
+          <StackPanel Spacing="6">
+            <ComboBox x:Name="OutcomeBox" HorizontalAlignment="Stretch"
+                      ToolTip.Tip="What happened in the cell. No mark and Damaged teach the planner where the usable region ends." />
+            <TextBlock Classes="dim" Text="Colour as L*, a*, b* (from a colorimeter or spectrophotometer):" />
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+              <NumericUpDown x:Name="LBox" ShowButtonSpinner="False" Minimum="0" Maximum="100" Increment="0.5" FormatString="0.0" Watermark="L*"
+                             ToolTip.Tip="L* lightness, 0 (black) to 100 (white)." />
+              <NumericUpDown Grid.Column="1" x:Name="ABox" ShowButtonSpinner="False" Minimum="-128" Maximum="128" Increment="0.5" FormatString="0.0" Watermark="a*"
+                             ToolTip.Tip="a*: negative is green, positive is red." />
+              <NumericUpDown Grid.Column="2" x:Name="BBox" ShowButtonSpinner="False" Minimum="-128" Maximum="128" Increment="0.5" FormatString="0.0" Watermark="b*"
+                             ToolTip.Tip="b*: negative is blue, positive is yellow." />
+            </Grid>
+            <ComboBox x:Name="MethodBox" HorizontalAlignment="Stretch"
+                      ToolTip.Tip="How the colour was measured. Instrument readings are trusted most." />
+            <TextBox x:Name="ViewingBox" Watermark="Viewing condition, e.g. 45° daylight"
+                     ToolTip.Tip="Oxide colours shift with viewing angle and light, so record how you looked." />
+            <DockPanel>
+              <Border x:Name="Swatch" DockPanel.Dock="Right" Width="44" Height="32" CornerRadius="4" BorderBrush="#40FFFFFF" BorderThickness="1"
+                      ToolTip.Tip="The entered colour as your screen can show it. A red border means the colour is outside what sRGB can display." />
+              <Button x:Name="SaveResultButton" Content="Save result" ToolTip.Tip="Record this result in the atlas (as a new reading; earlier ones are kept)." />
+            </DockPanel>
+          </StackPanel>
+        </Expander>
+
+        <TextBlock Classes="h" Text="Find settings for a colour" />
+        <TextBlock Classes="dim" Text="Pick the colour you want, or click one of the colours you have made." />
+        <ColorPicker x:Name="TargetPicker" Color="#3050C0" HorizontalAlignment="Left"
+                     ToolTip.Tip="The colour you want. The closest colours actually engraved are listed below." />
+        <WrapPanel x:Name="PaletteStrip" Margin="0,2,0,0" />
+        <Expander Header="Exact L*a*b* target" HorizontalAlignment="Stretch">
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+            <NumericUpDown x:Name="TLBox" ShowButtonSpinner="False" Minimum="0" Maximum="100" Value="50" Increment="0.5" FormatString="0.0" ToolTip.Tip="Target L*." />
+            <NumericUpDown Grid.Column="1" x:Name="TABox" ShowButtonSpinner="False" Minimum="-128" Maximum="128" Value="0" Increment="0.5" FormatString="0.0" ToolTip.Tip="Target a*." />
+            <NumericUpDown Grid.Column="2" x:Name="TBBox" ShowButtonSpinner="False" Minimum="-128" Maximum="128" Value="-30" Increment="0.5" FormatString="0.0" ToolTip.Tip="Target b*." />
+          </Grid>
+        </Expander>
+        <Button x:Name="FindButton" Content="Find closest measured colours" HorizontalAlignment="Stretch"
+                ToolTip.Tip="List the measured cells nearest the target colour (ΔE00), for this material, source and lens." />
+        <ItemsControl x:Name="FindResults" />
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Status -->
+    <Border Grid.Row="2" Grid.ColumnSpan="3" Background="#15171C" Padding="12,4" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <TextBlock x:Name="StatusText" Classes="dim" ToolTip.Tip="What just happened." />
+    </Border>
+  </Grid>
+</Window>

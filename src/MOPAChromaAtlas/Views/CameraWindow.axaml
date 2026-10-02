@@ -1,0 +1,65 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="MOPAChromaAtlas.Views.CameraWindow"
+        Title="Photograph a test card"
+        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
+        Width="1100" Height="760" MinWidth="760" MinHeight="520"
+        WindowStartupLocation="CenterOwner">
+
+  <Window.Styles>
+    <Style Selector="NumericUpDown">
+      <Setter Property="ShowButtonSpinner" Value="False" />
+    </Style>
+  </Window.Styles>
+
+  <Grid ColumnDefinitions="300,*" RowDefinitions="*,Auto">
+
+    <ScrollViewer Grid.Column="0" Background="#111317">
+      <StackPanel Margin="12,0,12,12" Spacing="6">
+        <TextBlock Classes="h" Text="Camera" />
+        <ComboBox x:Name="DeviceBox" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="The camera to use. Plug a USB camera in, then press Look again if it is not listed." />
+        <ComboBox x:Name="FormatBox" HorizontalAlignment="Stretch"
+                  ToolTip.Tip="Resolution and format. Larger is better for small squares; an uncompressed format avoids JPEG colour shifts." />
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <Button x:Name="RefreshButton" Content="Look again" FontSize="12"
+                  ToolTip.Tip="List the cameras again, e.g. after plugging one in." />
+          <Button x:Name="SettingsButton" Content="Camera settings…" FontSize="12"
+                  ToolTip.Tip="The camera's own settings. Turn off auto white balance and auto exposure, so every card is photographed the same way." />
+        </StackPanel>
+
+        <TextBlock Classes="h" Text="Capture" />
+        <Grid ColumnDefinitions="*,80">
+          <TextBlock Text="Frames to average" VerticalAlignment="Center" FontSize="12" />
+          <NumericUpDown Grid.Column="1" x:Name="FramesBox" Minimum="1" Maximum="32" FormatString="0"
+                         ToolTip.Tip="Several frames are averaged into one picture. More frames, less noise: 8 is a good balance." />
+        </Grid>
+
+        <TextBlock Classes="h" Text="For colours you can compare" />
+        <TextBlock Classes="dim" TextWrapping="Wrap"
+                   Text="Lock white balance and exposure in Camera settings. Light the card evenly from the side and keep bright objects out of its reflection: a mirror finish shows whatever is above it. Hold the camera square to the card if you can; Atlas corrects an angle, but squares far away get fewer pixels." />
+        <TextBlock Classes="dim" TextWrapping="Wrap" Margin="0,6,0,0"
+                   Text="Photo colours are recorded as estimates, separately from flatbed scans." />
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Column="1" Background="#0B0C0F" Padding="8">
+      <Grid>
+        <Image x:Name="Preview" Stretch="Uniform" />
+        <TextBlock x:Name="PreviewText" Classes="dim" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Text="Looking for cameras…" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <Button x:Name="CancelButton" Content="Cancel" ToolTip.Tip="Close without taking a picture." />
+          <Button x:Name="CaptureButton" Content="Take picture" Classes="accent" IsEnabled="False"
+                  ToolTip.Tip="Average the next few frames into one picture and use it." />
+        </StackPanel>
+        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" />
+      </DockPanel>
+    </Border>
+  </Grid>
+</Window>

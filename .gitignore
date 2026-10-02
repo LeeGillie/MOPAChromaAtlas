@@ -1,0 +1,32 @@
+# Build output
+bin/
+obj/
+publish/
+dist/
+*.user
+.vs/
+TestResults/
+
+# Windows thumbnail cache
+Thumbs.db
+
+# Scans of real cards stay local
+samples/
+
+# Local scratch
+_shot.jpg
+*.tmp
+*.unreadable-*
+
+# Private working notes (vendor-confidential material never goes in the repo)
+PRIVATE-*.md
+
+# Research and internal notes stay private (reverse-engineering findings, legal research,
+# MakeIt internals). They live beside the repo on the author's PC, never in it.
+research_notes/
+reports/
+docs/research/
+docs/LUMOS-LIBRARY-IDEA.md
+
+# Staging folder for workflow files (moved into .github/workflows by hand)
+workflows-to-move/
