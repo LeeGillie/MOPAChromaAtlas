@@ -1,31 +1,46 @@
 # Resume here
 
-## 2026-10-02: publish day (Lee's call)
+## Released: v0.1.0 on 2026-10-02
 
-State at the end of 2026-10-01 (all synced to Cortex, `-warnaserror` clean, 149 core tests
-pass; nothing pushed): heat limits (planner 40 J/mm², job audit 45 J/mm², SafeSend the only
-upload path) after the burn-through; per-material planning ranges (passes 1/2/3, least heat);
-micro-grids sized to their cells, planned around good cells outside the ranges, and a window
-when none can be planned; filled corner marks, number dots and "Grid N" label (visible on
-titanium); whole-sheet reading confirmed on Lee's titanium scan (MakeIt card beside the grids,
-grids not on one lattice, light/dark mixed cells); reading one grid from a picture of several
-picks it by number; **MakeIt exports confirmed in MakeIt 3.0.6**: materials (`Export/
-MakeItMaterials`, Import adds under Customization, every Fill setting applied, re-import
-updates in place by id; ids must be well-formed UUIDs) and the palette project
-(`Export/MakeItPalette`, plain 3.0.5 format, in colour order, fitted inside the lens field);
-palette window counts, default export folder, Show in folder; console hidden for share builds.
-User guide, README and CHANGELOG updated for all of it.
+**Public at https://github.com/LeeGillie/MOPAChromaAtlas** (MIT). Release v0.1.0 has seven
+zips (win-x64/arm64/x86, osx-arm64/x64, linux-x64/arm64), the guide PDF and SHA256SUMS; the
+build workflow passed on Windows, macOS and Linux; the downloaded win-x64 zip runs,
+reports 0.1.0 and its update check finds the release. Fresh history (one first commit,
+author Lee Gillie with GitHub's noreply address set in this repo's git config). The pre-public
+history, which held private research, is kept outside the project in
+`D:\DevHome\MOPAChroma Atlas (private git history)`: never push it.
 
-To publish (Lee):
-1. Move `workflows-to-move\*.yml` into `.github\workflows\` (Claude's tools may not write there).
-2. Delete `docs\images\micro-grid.png`, `docs\images\scan-import.png` and `docs\images\ScreenShot.png` (stale or unused; only main-demo.png is used, refreshed 2026-10-02).
-3. Confirm the repo name `LeeGillie/MOPAChromaAtlas` (the updater and links use it).
-4. Decide the absolute heat cap (40 J/mm² now; ~75 possible) or keep it.
-5. Rebuild the guide PDF (`python docs/build_guide.py`), check it, then push and tag `v0.1.0`.
+**How work goes from now on:** this folder on Cortex is the git working copy (remote
+`origin` = GitHub, branch `main`). Change, build with `-warnaserror`, test, then commit and
+push only when Lee says so. A release: bump `<Version>` in Directory.Build.props, add its
+section at the top of CHANGELOG.md, push, wait for the build workflow, then tag `vX.Y.Z` and
+push the tag (the release workflow builds and publishes; installed copies offer the update).
+Private notes stay out by `.gitignore`: research_notes/, reports/, docs/research/,
+docs/LUMOS-LIBRARY-IDEA.md, samples/, dist/. `.github/workflows` can only be changed by
+Lee's hand (Claude's tools may not write there).
 
-Open checks: engrave a shape from an exported MakeIt material beside its grid cell and compare;
-LightBurn with the Ultra (T5–T7). Lee's draft Facebook announcement was rewritten on
-2026-10-01 (no cabin-light control in Atlas: do not claim it).
+**Feedback channels:** discussion in Lee's Facebook group *Lumos Ultra Owners & Makers —
+Independent User Group*; bugs and features as GitHub issues (*Report a problem* in the app).
+
+**Lee's to-dos after release:** set the repo's social preview to `Art\Banner1.png`
+(Settings → General); post the group announcement (drafted 2026-10-02, with a photo of a
+real sheet or Banner2).
+
+**Next release (see TODO.md for detail):**
+1. User guide screenshots (Lee: important): reader with the grid placed by hand, Send to
+   laser, Planning ranges, Palette and exports, MakeIt's Material list.
+2. Finding grids in camera photos (Lee's YoloLiv S3 photos never auto-detected; hand
+   placement works). Get a few of his photos into samples/ as test cases first.
+3. Cabin-light control for reading cards with the laser camera (learn MakeIt's request).
+4. Open checks: engrave a shape from an exported MakeIt material beside its grid cell and
+   compare; LightBurn with the Ultra (T5–T7); Mac/Linux with a laser.
+
+Facts learned on 2026-10-01/02 worth keeping: MakeIt 3.0.6 opens plain 3.0.5 projects and
+imports plain material JSON (Material preview → Import); imported materials with the same id
+update in place; ids must be well-formed UUIDs or the import silently shows nothing;
+MakeIt needs the Ultra and its MOPA module selected before frequency/pulse width show; it
+ignores processAngle and isIgnoreWork. A flatbed scanner washed out Lee's oxide colours; a
+USB camera with angled light was far better, so the palette uses the latest reading.
 
 
 ## 2026-10-01 evening: publish candidate, waiting on Lee's tests
