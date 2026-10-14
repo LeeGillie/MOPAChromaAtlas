@@ -47,7 +47,7 @@ public partial class SendToLaserWindow : Window
         Title = "Preview", MaterialId = "preview", SourceId = "", LensId = "",
         Layout = new GridLayout(), Cells = [],
     }, new ScanImportContext(new MOPAChroma.Atlas.Material { Id = "preview", Name = "Preview" },
-        MOPAChroma.Laser.SourceProfile.Presets[0], MOPAChroma.Laser.LensProfile.Presets[0], [], null, "preview")) { }
+        LumosUltra.Jobs.SourceProfile.Presets[0], LumosUltra.Jobs.LensProfile.Presets[0], [], null, "preview")) { }
 
     public SendToLaserWindow(TestGrid grid, ScanImportContext readContext)
     {
@@ -375,7 +375,7 @@ public partial class SendToLaserWindow : Window
 
     private async Task CalibrateAsync()
     {
-        var saved = await new CameraCalibrationWindow().ShowDialog<bool>(this);
+        var saved = await CameraCalibrationWindow.ShowAsync(this, _settings.Lumos);
         _settings = CaptureSettings.Load();
         ShowCalibrationState();
         if (saved) await PhotoAsync();

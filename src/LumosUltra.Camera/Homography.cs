@@ -1,4 +1,4 @@
-namespace MOPAChroma.Scanning;
+namespace LumosUltra.Camera;
 
 /// <summary>
 /// A plane-to-plane perspective map, x' = (h0 x + h1 y + h2) / (h6 x + h7 y + 1), and the

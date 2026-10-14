@@ -1,5 +1,4 @@
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Planning;
 
 /// <summary>A continuous range for one setting, sampled linearly or logarithmically.</summary>

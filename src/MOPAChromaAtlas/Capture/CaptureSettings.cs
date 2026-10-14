@@ -1,11 +1,21 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using LumosUltra.Desktop;
+using LumosUltra.Camera;
 
 namespace MOPAChromaAtlas.Capture;
 
 /// <summary>
 /// Remembered choices for bringing card images in: the scanner's save folder, the last
-/// camera and format, and the laser's address. Kept beside the atlas in the user profile;
-/// a missing or damaged file just means starting with the defaults.
+/// camera and format. Kept beside the atlas in the user profile; a missing or damaged file
+/// just means starting with the defaults.
+/// <para>
+/// Everything about the laser itself - its address, how its camera's pictures are turned,
+/// the camera's calibration - lives in <see cref="LumosSettings"/>, the file every program
+/// that talks to the laser shares, so a calibration made in one program serves the others.
+/// The members below that start with Lumos read and write that file; they used to be stored
+/// here, and a copy from before the shared file existed is carried across once.
+/// </para>
 /// </summary>
 public sealed class CaptureSettings
 {
@@ -17,36 +27,25 @@ public sealed class CaptureSettings
     public string? CameraFormat { get; set; }
     /// <summary>Frames averaged per camera capture.</summary>
     public int CameraFrames { get; set; } = 8;
-    public string LumosAddress { get; set; } = LumosUltra.Client.LumosUltraClient.DefaultUsbBaseAddress;
 
-    /// <summary>
-    /// How the laser camera's picture is put upright: quarter turns clockwise, then a mirror.
-    /// The Ultra's camera delivers its picture on its side; 3 (a quarter turn anticlockwise)
-    /// is the default. Changed with the turn/mirror buttons on the picture.
-    /// </summary>
-    public int LumosQuarterTurns { get; set; } = 3;
-    public bool LumosMirror { get; set; }
+    /// <summary>The laser's own settings, shared between programs (see the class notes).</summary>
+    [JsonIgnore]
+    public LumosSettings Lumos { get; private set; } = new();
 
-    /// <summary>The laser camera's calibration to bed millimetres, and the picture orientation it was made in.</summary>
-    public MOPAChroma.Scanning.BedCamera? LumosCamera { get; set; }
-    public string? LumosCameraOrientation { get; set; }
-    /// <summary>The calibration target layout it was made with (<see cref="MOPAChroma.Scanning.BedCameraTarget.Version"/>).</summary>
-    public int LumosCameraTargetVersion { get; set; }
-
-    public string LumosOrientation => $"{((LumosQuarterTurns % 4) + 4) % 4}{(LumosMirror ? "m" : "")}";
+    [JsonIgnore] public string LumosAddress { get => Lumos.Address; set => Lumos.Address = value; }
+    [JsonIgnore] public int LumosQuarterTurns { get => Lumos.QuarterTurns; set => Lumos.QuarterTurns = value; }
+    [JsonIgnore] public bool LumosMirror { get => Lumos.Mirror; set => Lumos.Mirror = value; }
+    [JsonIgnore] public BedCamera? LumosCamera => Lumos.Camera;
+    [JsonIgnore] public string LumosOrientation => Lumos.Orientation;
 
     /// <summary>
     /// The calibration, if it was made with the picture turned the way it is now and with the
-    /// current target. (Calibrations from the first, symmetric target are not trusted: clicked
-    /// in the wrong order they fit perfectly and put jobs on the wrong side of the bed.)
+    /// current target (see <see cref="LumosSettings.CurrentCamera"/>).
     /// </summary>
-    public MOPAChroma.Scanning.BedCamera? CurrentLumosCamera =>
-        LumosCamera is { } c && LumosCameraOrientation == LumosOrientation
-        && LumosCameraTargetVersion == MOPAChroma.Scanning.BedCameraTarget.Version ? c : null;
+    [JsonIgnore] public BedCamera? CurrentLumosCamera => Lumos.CurrentCamera;
 
     /// <summary>A laser camera JPEG, decoded and turned upright as set.</summary>
-    public MOPAChroma.Scanning.RgbImage LumosUpright(byte[] jpeg) =>
-        MOPAChroma.Scanning.RgbImage.Decode(jpeg).Oriented(LumosQuarterTurns, LumosMirror);
+    public RgbImage LumosUpright(byte[] jpeg) => Lumos.Upright(jpeg);
 
     public static string Folder => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MOPAChromaAtlas");
@@ -58,12 +57,43 @@ public sealed class CaptureSettings
 
     public static CaptureSettings Load()
     {
-        try { return JsonSerializer.Deserialize<CaptureSettings>(File.ReadAllText(FilePath)) ?? new(); }
-        catch { return new(); }
+        CaptureSettings s;
+        string? json = null;
+        try { json = File.ReadAllText(FilePath); s = JsonSerializer.Deserialize<CaptureSettings>(json) ?? new(); }
+        catch { s = new(); }
+        s.Lumos = LumosSettings.Exists ? LumosSettings.Load() : Migrate(json);
+        return s;
+    }
+
+    /// <summary>
+    /// The laser settings Atlas kept in its own file before the shared one existed, carried
+    /// across so an existing calibration is not lost. Read field by field, so a file from any
+    /// older version is fine.
+    /// </summary>
+    private static LumosSettings Migrate(string? json)
+    {
+        var l = new LumosSettings();
+        if (json is null) return l;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var r = doc.RootElement;
+            if (r.TryGetProperty("LumosAddress", out var a) && a.ValueKind == JsonValueKind.String) l.Address = a.GetString() ?? l.Address;
+            if (r.TryGetProperty("LumosQuarterTurns", out var q) && q.TryGetInt32(out int qt)) l.QuarterTurns = qt;
+            if (r.TryGetProperty("LumosMirror", out var m) && m.ValueKind is JsonValueKind.True or JsonValueKind.False) l.Mirror = m.GetBoolean();
+            if (r.TryGetProperty("LumosCamera", out var c) && c.ValueKind == JsonValueKind.Object)
+                l.Camera = c.Deserialize<BedCamera>();
+            if (r.TryGetProperty("LumosCameraOrientation", out var o) && o.ValueKind == JsonValueKind.String) l.CameraOrientation = o.GetString();
+            if (r.TryGetProperty("LumosCameraTargetVersion", out var v) && v.TryGetInt32(out int tv)) l.CameraTargetVersion = tv;
+            if (l.Camera is not null) l.Save();
+        }
+        catch { /* nothing worth carrying across */ }
+        return l;
     }
 
     public void Save()
     {
+        Lumos.Save();
         try
         {
             Directory.CreateDirectory(Folder);

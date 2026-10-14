@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:lu="using:LumosUltra.Desktop"
         xmlns:v="using:MOPAChromaAtlas.Views"
         x:Class="MOPAChromaAtlas.Views.SendToLaserWindow"
         Title="Send to the laser"
@@ -97,7 +98,7 @@
           <TextBlock x:Name="PreviewText" Classes="dim" VerticalAlignment="Center" TextWrapping="Wrap" FontSize="12" />
         </DockPanel>
       </Border>
-      <v:PhotoView Grid.Row="1" x:Name="Photo" />
+      <lu:PhotoView Grid.Row="1" x:Name="Photo" />
     </Grid>
 
     <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">

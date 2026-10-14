@@ -10,7 +10,7 @@ using Avalonia.Threading;
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 using MOPAChroma.Scanning;
 using MOPAChromaAtlas.Capture;
 

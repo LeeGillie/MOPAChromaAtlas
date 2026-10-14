@@ -6,8 +6,7 @@ using Avalonia.Platform.Storage;
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
 using MOPAChroma.Export;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChromaAtlas.Views;
 
 /// <summary>

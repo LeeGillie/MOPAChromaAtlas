@@ -1,5 +1,21 @@
 # Resume here
 
+## In progress: branch `capture-import` (2026-10-03, not committed)
+
+Angle capture from the sister project **MOPAChroma Capture** (`D:\DevHome\MOPAChroma Capture`,
+no remote yet): `AngleSet`/`AnglePoint` in the atlas (schema 2, written only when there are
+angle sets, so older Atlas versions keep opening ordinary atlases), `AngleCapture/CaptureImport`
+and `CaptureCards`, the **Capture angles…** window (`Views/CaptureWindow.cs`, demo atlas only
+gets the simulated box), `--capture-demo <folder>` for screenshots, user guide Recipe 10,
+`AngleCaptureTests` (4). Builds with -warnaserror; all 153 core tests pass.
+
+**Before merging:** Atlas now compiles `MOPAChroma.Capture.Core` and references
+`MOPAChroma.Capture.Devices` from `$(CaptureRoot)` (env `CAPTURE_ROOT`, default
+`..\MOPAChroma Capture\`). The GitHub build workflow will fail until the Capture repo is
+public and checked out beside Atlas in the workflow - a workflow change only Lee can make.
+Until then keep this on the branch.
+
+
 ## Released: v0.1.0 on 2026-10-02
 
 **Public at https://github.com/LeeGillie/MOPAChromaAtlas** (MIT). Release v0.1.0 has seven

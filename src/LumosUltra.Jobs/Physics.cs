@@ -1,4 +1,4 @@
-namespace MOPAChroma.Laser;
+namespace LumosUltra.Jobs;
 
 /// <summary>
 /// The physically meaningful quantities behind a set of settings.

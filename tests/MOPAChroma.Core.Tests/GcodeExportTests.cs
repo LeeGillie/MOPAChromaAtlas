@@ -1,7 +1,6 @@
 using System.Globalization;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Tests;
 
 public class GcodeExportTests

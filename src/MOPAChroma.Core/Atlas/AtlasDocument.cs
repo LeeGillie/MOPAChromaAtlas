@@ -1,8 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Atlas;
 
 /// <summary>
@@ -12,7 +11,12 @@ namespace MOPAChroma.Atlas;
 /// </summary>
 public sealed class AtlasDocument
 {
-    public const int CurrentSchema = 1;
+    /// <summary>
+    /// Schema 2 added <see cref="AngleSets"/>. A file is written as schema 1 while it has none,
+    /// so older versions of Atlas still open it; once it has some, older versions refuse it
+    /// (rather than open it and drop the angle data on their next save).
+    /// </summary>
+    public const int CurrentSchema = 2;
 
     public int Schema { get; set; } = CurrentSchema;
     public List<Material> Materials { get; set; } = [];
@@ -21,6 +25,8 @@ public sealed class AtlasDocument
     public List<TestGrid> Grids { get; set; } = [];
     public List<Sample> Samples { get; set; } = [];
     public List<PlannedCard> PlannedCards { get; set; } = [];
+    /// <summary>Colours over angles from the capture box, per cell (schema 2).</summary>
+    public List<AngleSet> AngleSets { get; set; } = [];
 
     public static AtlasDocument CreateDefault() => new()
     {
@@ -97,6 +103,7 @@ public sealed class AtlasDocument
     /// <summary>Write via a temporary file so a crash mid-save never destroys the atlas.</summary>
     public void Save(string path)
     {
+        Schema = AngleSets.Count > 0 ? 2 : 1;
         var tmp = path + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(this, Options));
         File.Move(tmp, path, overwrite: true);

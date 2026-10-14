@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace MOPAChroma.Laser;
+namespace LumosUltra.Jobs;
 
 /// <summary>
 /// An independent check of a finished job file: how much energy every square millimetre of the

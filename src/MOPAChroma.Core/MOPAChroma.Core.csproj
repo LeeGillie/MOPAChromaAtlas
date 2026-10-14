@@ -21,4 +21,20 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="$(ImageSharpVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The laser libraries this solution shares with other programs (DepthView). -->
+    <Using Include="LumosUltra.Jobs" />
+    <Using Include="LumosUltra.Camera" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LumosUltra.Jobs\LumosUltra.Jobs.csproj" />
+    <ProjectReference Include="..\LumosUltra.Camera\LumosUltra.Camera.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Angle capture: reading capture packages (MOPAChroma Capture, a sister repository). -->
+    <ProjectReference Include="$(CaptureRoot)src\MOPAChroma.Capture.Core\MOPAChroma.Capture.Core.csproj" />
+  </ItemGroup>
+
 </Project>

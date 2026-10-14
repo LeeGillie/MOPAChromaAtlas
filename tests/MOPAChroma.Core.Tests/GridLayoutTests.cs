@@ -1,8 +1,7 @@
 using System.Globalization;
 using System.Xml.Linq;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Tests;
 
 public class GridLayoutTests

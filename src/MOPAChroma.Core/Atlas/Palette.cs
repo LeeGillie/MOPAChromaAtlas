@@ -1,8 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using MOPAChroma.Color;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Atlas;
 
 /// <summary>

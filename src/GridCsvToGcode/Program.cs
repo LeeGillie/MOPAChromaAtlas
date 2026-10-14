@@ -1,7 +1,6 @@
 using System.Globalization;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 if (args.Length < 6)
 {
     Console.Error.WriteLine("Usage: GridCsvToGcode <settings.csv> <columns> <rows> <cellSizeMm> <gapMm> <output.gc>");

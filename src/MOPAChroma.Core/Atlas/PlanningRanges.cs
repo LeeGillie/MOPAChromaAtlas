@@ -40,7 +40,7 @@ public sealed record PlanningRanges
     public static PlanningRanges Default { get; } = new();
 
     /// <summary>True when these settings lie inside the ranges (a small tolerance for rounding).</summary>
-    public bool Contains(Laser.MopaSettings s) =>
+    public bool Contains(MopaSettings s) =>
         s.PowerPercent >= PowerMinPercent - 0.5 && s.PowerPercent <= PowerMaxPercent + 0.5
         && s.FrequencyKHz >= FrequencyMinKHz - 0.5 && s.FrequencyKHz <= FrequencyMaxKHz + 0.5
         && s.PulseWidthNs >= PulseWidthMinNs - 1e-6 && s.PulseWidthNs <= PulseWidthMaxNs + 1e-6
@@ -54,7 +54,7 @@ public sealed record PlanningRanges
     /// micro-grid around it may sweep from it towards the ranges. Passes are never stretched
     /// beyond <see cref="MostPasses"/>; the heat limits still apply on top.
     /// </summary>
-    public PlanningRanges Including(Laser.MopaSettings s) => this with
+    public PlanningRanges Including(MopaSettings s) => this with
     {
         PowerMinPercent = Math.Min(PowerMinPercent, s.PowerPercent),
         PowerMaxPercent = Math.Max(PowerMaxPercent, s.PowerPercent),

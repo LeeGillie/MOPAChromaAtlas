@@ -32,6 +32,19 @@ public static class ColorConvert
     }
 
     /// <summary>
+    /// Linear-light sRGB (not gamma-encoded) to Lab, without clipping: values above 1, such
+    /// as a bright reflection measured against a grey reference, give L* above 100.
+    /// </summary>
+    public static Lab LinearToLab(double rl, double gl, double bl)
+    {
+        double x = 0.4124564 * rl + 0.3575761 * gl + 0.1804375 * bl;
+        double y = 0.2126729 * rl + 0.7151522 * gl + 0.0721750 * bl;
+        double z = 0.0193339 * rl + 0.1191920 * gl + 0.9503041 * bl;
+        double fx = F(Math.Max(0, x) / Xn), fy = F(Math.Max(0, y) / Yn), fz = F(Math.Max(0, z) / Zn);
+        return new Lab(116.0 * fy - 16.0, 500.0 * (fx - fy), 200.0 * (fy - fz));
+    }
+
+    /// <summary>
     /// Lab to 8-bit sRGB for display. Colours outside the sRGB gamut are clipped per
     /// channel; <paramref name="inGamut"/> reports whether that happened, so the UI can
     /// mark swatches that cannot be shown truthfully on screen (saturated oxide blues

@@ -372,6 +372,26 @@ check, and add to the atlas.
 
 ---
 
+### Recipe 10 — Colour at every angle: the capture box (experimental)
+
+Oxide colours change as you tilt a card. The **MOPAChroma Capture** box (a separate, open
+project: a small 3D-printed box with a camera, eight LEDs, a tilting cradle and a turntable)
+measures that for a business-card-sized coupon.
+
+1. Engrave the grid on a business-card coupon as usual (Recipe 3).
+2. Select the grid and press **Capture angles…**.
+3. Put the card in the turntable's pocket, labels upright, and close the lid.
+4. Choose the box (or press **Find**), the box's camera and a plan: **Quick look** takes a few
+   minutes, **Full** takes about 2,000 pictures.
+5. Press **Start capture**. The box homes, locks the camera, tilts and turns the card under each
+   LED in turn, then checks its own results. **Stop** leaves the LEDs off and the card flat.
+6. Atlas finds the grid, measures every cell in every picture and stores each cell's colour
+   against its view, light and mirror angles, beside (never instead of) its ordinary reading.
+
+The package folder is kept, so a capture can be imported again with **Import a saved capture…**.
+The demo atlas offers a simulated box, whose results are labelled SIMULATED and are never
+accepted by a real atlas. The laser is not involved at any point.
+
 ## Part 3 — Tips, troubleshooting and safety
 
 ### Good habits

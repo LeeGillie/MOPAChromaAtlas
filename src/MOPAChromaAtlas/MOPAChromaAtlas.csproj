@@ -50,9 +50,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The laser libraries this solution shares with other programs (DepthView). -->
+    <Using Include="LumosUltra.Jobs" />
+    <Using Include="LumosUltra.Camera" />
+    <Using Include="LumosUltra.Desktop" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MOPAChroma.Core\MOPAChroma.Core.csproj" />
     <!-- The laser's own camera, for photographing a card where it was engraved. -->
     <ProjectReference Include="..\LumosUltra.Client\LumosUltra.Client.csproj" />
+    <!-- The shared photo view, camera calibration window and laser settings. -->
+    <ProjectReference Include="..\LumosUltra.Desktop\LumosUltra.Desktop.csproj" />
+    <!-- The capture box: its USB serial port, and camera control (MOPAChroma Capture). -->
+    <ProjectReference Include="$(CaptureRoot)src\MOPAChroma.Capture.Devices\MOPAChroma.Capture.Devices.csproj" />
   </ItemGroup>
 
 </Project>

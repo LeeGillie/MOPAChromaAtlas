@@ -1,6 +1,5 @@
 using LumosUltra.Client;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChromaAtlas.Capture;
 
 /// <summary>

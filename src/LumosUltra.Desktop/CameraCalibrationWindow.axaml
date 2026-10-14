@@ -1,15 +1,26 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:v="using:MOPAChromaAtlas.Views"
-        x:Class="MOPAChromaAtlas.Views.CameraCalibrationWindow"
+        xmlns:lu="using:LumosUltra.Desktop"
+        x:Class="LumosUltra.Desktop.CameraCalibrationWindow"
         Title="Calibrate the laser's camera"
-        Icon="avares://MOPAChromaAtlas/Assets/icon-256.png"
         Width="1400" Height="900" MinWidth="1000" MinHeight="620"
         WindowStartupLocation="CenterOwner">
 
+  <!-- Self-contained styles, so the window looks the same from any host program. -->
   <Window.Styles>
     <Style Selector="NumericUpDown">
       <Setter Property="ShowButtonSpinner" Value="False" />
+    </Style>
+    <Style Selector="TextBlock.h">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="FontSize" Value="13" />
+      <Setter Property="Margin" Value="0,12,0,4" />
+      <Setter Property="Foreground" Value="#9FB4FF" />
+    </Style>
+    <Style Selector="TextBlock.dim">
+      <Setter Property="Foreground" Value="#8A8F99" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
     <Style Selector="TextBlock.lbl">
       <Setter Property="VerticalAlignment" Value="Center" />
@@ -29,7 +40,7 @@
         <StackPanel x:Name="EngravePanel" Spacing="8">
           <TextBlock Classes="h" Text="Step 1 of 2: engrave the target" />
           <TextBlock Classes="big"
-                     Text="1. Cover the bed with a big scrap: a sheet of cardboard is fine.&#10;2. Press Send and arm, then press Start on the laser.&#10;3. The laser engraves nine small + marks spread over the scrap (about a minute).&#10;4. When it finishes, Atlas takes a picture and moves on to step 2." />
+                     Text="1. Cover the bed with a big scrap: a sheet of cardboard is fine.&#10;2. Press Send and arm, then press Start on the laser.&#10;3. The laser engraves nine small + marks spread over the scrap (about a minute).&#10;4. When it finishes, a picture is taken and step 2 begins." />
           <Grid ColumnDefinitions="*,100" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" Margin="0,4,0,0">
             <TextBlock Classes="lbl" Text="Power (%)" />
             <NumericUpDown Grid.Column="1" x:Name="PowerBox" Minimum="1" Maximum="100" Value="40" FormatString="0.#" />
@@ -40,7 +51,7 @@
             <TextBlock Grid.Row="3" Classes="lbl" Text="Pulse width (ns)" />
             <NumericUpDown Grid.Row="3" Grid.Column="1" x:Name="PwBox" Minimum="1" Maximum="500" Value="200" FormatString="0" />
           </Grid>
-          <TextBlock Classes="dim" TextWrapping="Wrap" FontSize="12" Text="Settings that leave a clear dark line on your scrap." />
+          <TextBlock Classes="dim" Text="Settings that leave a clear dark line on your scrap." />
           <StackPanel Orientation="Horizontal" Spacing="6">
             <Button x:Name="SendButton" Content="Send and arm" Classes="accent" />
             <Button x:Name="StopButton" Content="Stop job" IsVisible="False" />
@@ -54,7 +65,7 @@
         <StackPanel x:Name="ClickPanel" Spacing="8" IsVisible="False">
           <TextBlock Classes="h" Text="Step 2 of 2: click the + marks" />
           <TextBlock Classes="big"
-                     Text="The picture on the right shows the engraved scrap. Click exactly on the centre of each + mark, in any order. Scroll to zoom in for precision; drag to move around.&#10;&#10;Each click gets a ring. When Atlas recognises a mark, the ring shows that mark's number." />
+                     Text="The picture on the right shows the engraved scrap. Click exactly on the centre of each + mark, in any order. Scroll to zoom in for precision; drag to move around.&#10;&#10;Each click gets a ring. When a mark is recognised, the ring shows that mark's number." />
           <TextBlock x:Name="StepText" Classes="big" FontWeight="SemiBold" />
           <StackPanel Orientation="Horizontal" Spacing="6">
             <Button x:Name="UndoButton" Content="Undo last click" IsEnabled="False" />
@@ -71,7 +82,7 @@
       </StackPanel>
     </ScrollViewer>
 
-    <v:PhotoView Grid.Column="1" x:Name="Photo" />
+    <lu:PhotoView Grid.Column="1" x:Name="Photo" />
 
     <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#15171C" Padding="12,8" BorderBrush="#2A2E36" BorderThickness="0,1,0,0">
       <DockPanel>
@@ -79,7 +90,7 @@
           <Button x:Name="CancelButton" Content="Cancel" />
           <Button x:Name="SaveButton" Content="Save calibration" Classes="accent" IsEnabled="False" />
         </StackPanel>
-        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" TextWrapping="Wrap" />
+        <TextBlock x:Name="StatusText" Classes="dim" VerticalAlignment="Center" />
       </DockPanel>
     </Border>
   </Grid>

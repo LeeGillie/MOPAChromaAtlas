@@ -1,4 +1,4 @@
-namespace MOPAChroma.Laser;
+namespace LumosUltra.Jobs;
 
 /// <summary>How much a stated value can be trusted. Carried on every preset.</summary>
 public enum Evidence

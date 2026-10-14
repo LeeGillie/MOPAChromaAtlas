@@ -1,7 +1,6 @@
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Planning;
 
 /// <summary>A setting the planner wants engraved, and why.</summary>

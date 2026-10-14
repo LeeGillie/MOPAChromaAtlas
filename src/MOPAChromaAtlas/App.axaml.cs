@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using MOPAChroma.Grids;
+using MOPAChroma.Scanning;
 using MOPAChromaAtlas.Views;
 
 namespace MOPAChromaAtlas;
@@ -27,13 +28,25 @@ public partial class App : Application
                 if (opts.ScreenshotPath is { } shot7)
                     w.Opened += (_, _) => DispatcherTimer.RunOnce(() => { SaveWindow(w, shot7); desktop.Shutdown(); }, TimeSpan.FromMilliseconds(800));
             }
+            else if (opts.CaptureDemoFolder is { } capDir)
+            {
+                var doc = DemoAtlas.Create();
+                var w = new CaptureWindow(doc, doc.Grids[0], () => { }, demo: true);
+                desktop.MainWindow = w;
+                w.Opened += async (_, _) =>
+                {
+                    await w.RunDemoAsync(capDir);
+                    if (opts.ScreenshotPath is { } shot8)
+                        DispatcherTimer.RunOnce(() => { SaveWindow(w, shot8); desktop.Shutdown(); }, TimeSpan.FromMilliseconds(800));
+                };
+            }
             else if (opts.CalibDemo is { } calib)
             {
                 var w = new CameraCalibrationWindow();
                 desktop.MainWindow = w;
                 w.Opened += (_, _) =>
                 {
-                    if (File.Exists(calib.Image)) w.UsePicture(MOPAChroma.Scanning.RgbImage.Load(calib.Image));
+                    if (File.Exists(calib.Image)) w.UsePicture(LumosUltra.Camera.RgbImage.Load(calib.Image));
                     if (File.Exists(calib.Clicks))
                     foreach (var line in File.ReadAllLines(calib.Clicks).Where(l => l.Contains(',')))
                     {
@@ -55,7 +68,7 @@ public partial class App : Application
                 desktop.MainWindow = w;
                 w.Opened += (_, _) =>
                 {
-                    w.UsePicture(MOPAChroma.Scanning.RgbImage.Load(sendImg));
+                    w.UsePicture(LumosUltra.Camera.RgbImage.Load(sendImg));
                     // MOPACHROMA_DEMO_CENTRE=x,y puts the job there (to compare with a simulated engraving).
                     if (Environment.GetEnvironmentVariable("MOPACHROMA_DEMO_CENTRE") is { } dc && dc.Split(',') is [var dx, var dy])
                         w.SetJobCentre(double.Parse(dx, System.Globalization.CultureInfo.InvariantCulture), double.Parse(dy, System.Globalization.CultureInfo.InvariantCulture));
@@ -72,13 +85,13 @@ public partial class App : Application
                     atlas.Grids.Add(new TestGrid
                     {
                         Title = $"Stainless — grid {n}", MaterialId = "ss-mirror", Number = n,
-                        SourceId = MOPAChroma.Laser.SourceProfile.Presets[0].Id, LensId = MOPAChroma.Laser.LensProfile.Presets[0].Id,
+                        SourceId = LumosUltra.Jobs.SourceProfile.Presets[0].Id, LensId = LumosUltra.Jobs.LensProfile.Presets[0].Id,
                         Layout = layout,
                         Cells = Enumerable.Range(0, rows * cols).Select(i => new GridCell(i / cols, i % cols, GridLayout.Label(i / cols, i % cols),
-                            new MOPAChroma.Laser.MopaSettings { PowerPercent = 40 + i, SpeedMmPerS = 500, LineDensityPerCm = 300, FrequencyKHz = 200, PulseWidthNs = 60, Passes = 1 })).ToList(),
+                            new LumosUltra.Jobs.MopaSettings { PowerPercent = 40 + i, SpeedMmPerS = 500, LineDensityPerCm = 300, FrequencyKHz = 200, PulseWidthNs = 60, Passes = 1 })).ToList(),
                     });
                 }
-                desktop.MainWindow = new SheetReadWindow(atlas, MOPAChroma.Scanning.RgbImage.Load(sheetImg), System.IO.Path.GetFileName(sheetImg));
+                desktop.MainWindow = new SheetReadWindow(atlas, LumosUltra.Camera.RgbImage.Load(sheetImg), System.IO.Path.GetFileName(sheetImg));
             }
             else if (opts.ReadDemoPath is { } readImg)
             {
@@ -87,7 +100,7 @@ public partial class App : Application
                 desktop.MainWindow = w;
                 w.Opened += async (_, _) =>
                 {
-                    var img = MOPAChroma.Scanning.RgbImage.Load(readImg);
+                    var img = LumosUltra.Camera.RgbImage.Load(readImg);
                     // MOPACHROMA_DEMO_CENTRE=x,y: the picture shows this grid engraved there; place it from the camera calibration.
                     MOPAChroma.Scanning.GridGeometry? at = null;
                     if (Environment.GetEnvironmentVariable("MOPACHROMA_DEMO_CENTRE") is { } dc && dc.Split(',') is [var dx, var dy]
@@ -102,7 +115,7 @@ public partial class App : Application
             {
                 var w = new ScanImportWindow(new ScanImportContext(
                     new MOPAChroma.Atlas.Material { Id = "ss-mirror", Name = "Stainless steel", Finish = "mirror" },
-                    MOPAChroma.Laser.SourceProfile.Presets[0], MOPAChroma.Laser.LensProfile.Presets[0],
+                    LumosUltra.Jobs.SourceProfile.Presets[0], LumosUltra.Jobs.LensProfile.Presets[0],
                     [], null, "ss-mirror-G01"));
                 desktop.MainWindow = w;
                 w.Opened += async (_, _) =>
@@ -148,21 +161,21 @@ public partial class App : Application
         var cells = new List<MOPAChroma.Grids.GridCell>();
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 8; c++)
-                cells.Add(new(r, c, MOPAChroma.Grids.GridLayout.Label(r, c), new MOPAChroma.Laser.MopaSettings
+                cells.Add(new(r, c, MOPAChroma.Grids.GridLayout.Label(r, c), new LumosUltra.Jobs.MopaSettings
                 {
                     PowerPercent = c < 2 ? 20 + c * 5 : 40 + c * 7, SpeedMmPerS = 800 - r * 100, LineDensityPerCm = 300,
                     FrequencyKHz = 150 + r * 50, PulseWidthNs = 60, Passes = 1,
                 }));
         return new MOPAChroma.Grids.TestGrid
         {
-            Title = "Seed (demo)", MaterialId = "ss-mirror", SourceId = MOPAChroma.Laser.SourceProfile.Presets[0].Id,
-            LensId = MOPAChroma.Laser.LensProfile.Presets[0].Id, Layout = layout, Cells = cells,
+            Title = "Seed (demo)", MaterialId = "ss-mirror", SourceId = LumosUltra.Jobs.SourceProfile.Presets[0].Id,
+            LensId = LumosUltra.Jobs.LensProfile.Presets[0].Id, Layout = layout, Cells = cells,
         };
     }
 
     private static ScanImportContext DemoContext() => new(
         new MOPAChroma.Atlas.Material { Id = "ss-mirror", Name = "Stainless steel", Finish = "mirror" },
-        MOPAChroma.Laser.SourceProfile.Presets[0], MOPAChroma.Laser.LensProfile.Presets[0], [], null, "demo");
+        LumosUltra.Jobs.SourceProfile.Presets[0], LumosUltra.Jobs.LensProfile.Presets[0], [], null, "demo");
 
     private static void SaveWindow(Avalonia.Controls.Window w, string path)
     {

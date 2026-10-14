@@ -1,0 +1,75 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="LICENSE" />
+    <File Path="publish.ps1" />
+    <File Path="publish.sh" />
+    <File Path="README.md" />
+    <File Path="RESUME-HERE.md" />
+    <File Path="TODO.md" />
+  </Folder>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/build.yml" />
+    <File Path=".github/workflows/release.yml" />
+  </Folder>
+  <Folder Name="/Art/">
+    <File Path="Art/Banner0.png" />
+    <File Path="Art/Banner1.png" />
+    <File Path="Art/Banner2.png" />
+    <File Path="Art/icon.png" />
+    <File Path="Art/Splash.png" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/USER-GUIDE.md" />
+    <File Path="docs/build_guide.py" />
+    <File Path="docs/CALIBRATION-FINDINGS.md" />
+    <File Path="docs/DESIGN.md" />
+    <File Path="docs/LUMOS-LIBRARY-IDEA.md" />
+  </Folder>
+  <Folder Name="/docs/images/">
+    <File Path="docs/images/main-demo.png" />
+    <File Path="docs/images/scan-import.png" />
+  </Folder>
+  <Folder Name="/docs/research/">
+    <File Path="docs/research/LightBurn-and-MakeIt-integration.md" />
+  </Folder>
+  <Folder Name="/packaging/">
+    <File Path="packaging/install-menu-entry.sh" />
+    <File Path="packaging/make_bundle.py" />
+    <File Path="packaging/MOPAChromaAtlas.icns" />
+    <File Path="packaging/README.txt" />
+    <File Path="packaging/RELEASE-FOOTER.md" />
+    <File Path="packaging/release_notes.py" />
+  </Folder>
+  <Folder Name="/reports/">
+    <File Path="reports/Lumos Ultra MakeIt automation research.md" />
+  </Folder>
+  <Folder Name="/research_notes/" />
+  <Folder Name="/research_notes/Lumos Ultra MakeIt automation research/">
+    <File Path="research_notes/Lumos Ultra MakeIt automation research/legal_warranty_safety_risk.md" />
+    <File Path="research_notes/Lumos Ultra MakeIt automation research/lightburn_support_status.md" />
+    <File Path="research_notes/Lumos Ultra MakeIt automation research/lumos_ultra_reverse_engineering.md" />
+    <File Path="research_notes/Lumos Ultra MakeIt automation research/similar_mopa_laser_hacking.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/GridCsvToGcode/GridCsvToGcode.csproj" />
+    <Project Path="src/LumosUltra.Client.TestHarness/LumosUltra.Client.TestHarness.csproj" />
+    <Project Path="src/LumosUltra.Client/LumosUltra.Client.csproj" />
+    <Project Path="src/MOPAChroma.Core/MOPAChroma.Core.csproj" />
+    <Project Path="src/MOPAChromaAtlas/MOPAChromaAtlas.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LumosUltra.Client.Tests/LumosUltra.Client.Tests.csproj" />
+    <Project Path="tests/MOPAChroma.Core.Tests/MOPAChroma.Core.Tests.csproj" />
+    <Project Path="tests/MOPAChromaAtlas.Updater.Tests/MOPAChromaAtlas.Updater.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <File Path="tools/check_solution.py" />
+    <File Path="tools/scan_probe.py" />
+  </Folder>
+</Solution>

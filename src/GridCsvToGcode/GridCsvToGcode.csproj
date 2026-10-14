@@ -19,6 +19,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The laser libraries this solution shares with other programs (DepthView). -->
+    <Using Include="LumosUltra.Jobs" />
+    <Using Include="LumosUltra.Camera" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MOPAChroma.Core\MOPAChroma.Core.csproj" />
   </ItemGroup>
 

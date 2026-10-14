@@ -1,6 +1,6 @@
 using System.Globalization;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 using MOPAChroma.Scanning;
 using Xunit.Abstractions;
 

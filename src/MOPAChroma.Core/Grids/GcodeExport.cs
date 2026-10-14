@@ -1,6 +1,4 @@
-using System.Globalization;
-using System.Text;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 
 namespace MOPAChroma.Grids;
 
@@ -11,56 +9,12 @@ namespace MOPAChroma.Grids;
 /// represent a grid whose cells vary power, speed, line density, frequency and pulse
 /// width independently per cell - exactly what <c>TestGrid.Arrange</c> produces.
 ///
-/// The per-cell encoding is CONFIRMED against real hardware: a known 3x3 MakeIt-wizard
-/// grid was captured via FTP and cross-checked against the physical engraved part (the
-/// part itself carries the axis labels and fixed settings). See
-/// docs/CALIBRATION-FINDINGS.md for the full writeup. In short, per cell:
-/// power -> <c>S = Power% * 10</c> on the raster burn stroke, frequency -> <c>M38F&lt;kHz&gt;</c>
-/// directly, speed -> <c>G1F&lt;mm/s * 60&gt;</c>, line pitch -> <c>10mm / LineDensityPerCm</c>,
-/// pulse width -> <c>M39P&lt;ns&gt;</c>.
-///
-/// The setup preamble and shutdown postamble are copied verbatim from a real
-/// MakeIt-generated job capture rather than invented, since they are machine
-/// initialisation/homing sequences not otherwise understood command-by-command - see
-/// samples/gcode/minimal-test-segment.gc, which used this exact preamble/postamble and
-/// was CONFIRMED to run correctly (including actually firing the laser) on real
-/// hardware.
+/// The job file itself is written by <see cref="MakeItJob"/> (LumosUltra.Jobs), which
+/// carries the confirmed preamble, postamble and per-stroke encoding; see its notes and
+/// docs/CALIBRATION-FINDINGS.md. This class only decides what to draw where.
 /// </summary>
 public static class GcodeExport
 {
-    private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
-
-    /// <summary>Machine-specific setup sequence, copied verbatim from a real MakeIt job
-    /// capture. Not independently understood command-by-command; confirmed to work.</summary>
-    private const string Preamble =
-        "M15S1\n" +
-        "M107X-105Y-105\n" +
-        "M57A450B30\n" +
-        "M19S0\n" +
-        "M18S0\n" +
-        "G90\n" +
-        "G4P1\n" +
-        "M46A1B0\n" +
-        "G0X105Y105\n" +
-        "M25S1\n" +
-        "M26S1\n" +
-        "M24S15\n" +
-        "M15S70\n" +
-        "M59A-1000B50\n" +
-        "M1S1\n" +
-        "M4S1000\n" +
-        "M11S0.005\n";
-
-    /// <summary>Return-home and laser-off shutdown sequence, copied verbatim from a real
-    /// MakeIt job capture.</summary>
-    private const string Postamble =
-        "G0X105Y105\n" +
-        "M9\n" +
-        "G1 S0\n" +
-        "M5\n" +
-        "G90\n" +
-        "M6\n";
-
     /// <summary>Fraction of a cell's width reserved (split evenly) for laser-off fly-in
     /// and fly-out either side of the burn stroke on every scan line, mirroring the
     /// confirmed real pattern (a zero-power move before and after the powered stroke) at
@@ -79,19 +33,15 @@ public static class GcodeExport
         double originX = centerX - l.WidthMm / 2;
         double originY = centerY - l.HeightMm / 2;
 
-        var sb = new StringBuilder();
-        sb.Append(";wecreat 3.0.6\n");
-        sb.Append(";canvas border: 0 0 210 210\n");
-        sb.Append(Preamble);
+        var job = new MakeItJob();
 
         foreach (var cell in grid.Cells)
-            AppendCell(sb, cell, l, originX, originY);
+            AppendCell(job, cell, l, originX, originY);
 
         if (cornerMarks && grid.Cells.Count > 0)
-            AppendCornerMarks(sb, grid, originX, originY);
+            AppendCornerMarks(job, grid, originX, originY);
 
-        sb.Append(Postamble);
-        return sb.ToString();
+        return job.Finish();
     }
 
     /// <summary>
@@ -104,7 +54,7 @@ public static class GcodeExport
     /// <para>Drawn as vector strokes with the settings of the grid's most energetic cell
     /// (highest power per unit speed): the cell most likely to leave a visible line.</para>
     /// </summary>
-    private static void AppendCornerMarks(StringBuilder sb, TestGrid grid, double originX, double originY)
+    private static void AppendCornerMarks(MakeItJob job, TestGrid grid, double originX, double originY)
     {
         var l = grid.Layout;
         // The marks copy the grid's hottest cell (most heat per area, passes included) exactly:
@@ -126,67 +76,30 @@ public static class GcodeExport
         var (trx, _) = Centre(l.Columns - 1, 0);
         var (blx, bly) = Centre(0, l.Rows - 1);
 
-        sb.Append($"M38F{(int)Math.Round(s.FrequencyKHz)}\n");
-        sb.Append($"M39P{(int)Math.Round(s.PulseWidthNs)}\n");
-        sb.Append("G0F15000\n");
-        sb.Append($"G1F{(int)Math.Round(s.SpeedMmPerS * 60)}\n");
-        int power = (int)Math.Round(Math.Clamp(s.PowerPercent, 0, 100) * 10);
-
-        // Same shape as every confirmed burn stroke: a powered G1, then an unpowered G1 (here
-        // zero-length) to drop the power before the next G0 travel.
-        void LineX(double x0, double x1, double y)
-        {
-            sb.Append($"G0X{F(x0)}Y{F(y)}\n");
-            sb.Append($"G1X{F(x1)}S{power}\n");
-            sb.Append($"G1X{F(x1)}S0\n");
-        }
-        void LineY(double x, double y0, double y1)
-        {
-            sb.Append($"G0X{F(x)}Y{F(y0)}\n");
-            sb.Append($"G1Y{F(y1)}S{power}\n");
-            sb.Append($"G1Y{F(y1)}S0\n");
-        }
-        // A filled rectangle, rastered along its long side at the cell's line spacing.
-        void Fill(double x0, double y0, double x1, double y1)
-        {
-            for (int pass = 0; pass < passes; pass++)
-            {
-                if (x1 - x0 >= y1 - y0)
-                    for (double y = y0 + lp / 2; y < y1; y += lp) LineX(x0, x1, y);
-                else
-                    for (double x = x0 + lp / 2; x < x1; x += lp) LineY(x, y0, y1);
-            }
-        }
+        job.Pulse(s.FrequencyKHz, s.PulseWidthNs).Feed(s.SpeedMmPerS);
+        int power = MakeItJob.PowerS(s.PowerPercent);
 
         // The grid number as a row of dots between the two top crosses (CardId).
         foreach (var (x, y, d) in CardId.DotsMm(l, grid.Number, originX, originY))
-            Fill(x - d / 2, y - d / 2, x + d / 2, y + d / 2);
+            job.Fill(x - d / 2, y - d / 2, x + d / 2, y + d / 2, lp, power, passes);
 
         // Corner crosses: two filled bars each.
         double bar = Math.Min(MarkBarMm, half);
         foreach (var (cx, cy) in new[] { (tlx, tly - offset), (trx, tly - offset), (blx, bly + offset) })
         {
-            Fill(cx - half, cy - bar / 2, cx + half, cy + bar / 2);
-            Fill(cx - bar / 2, cy - half, cx + bar / 2, cy + half);
+            job.Fill(cx - half, cy - bar / 2, cx + half, cy + bar / 2, lp, power, passes);
+            job.Fill(cx - bar / 2, cy - half, cx + bar / 2, cy + half, lp, power, passes);
         }
 
         // "Grid 29" for people, in the bottom margin (GridLabel): each stroke filled to
-        // MarkStrokeMm wide with parallel lines at the cell's spacing.
+        // GridLabel.StrokeMm wide with parallel lines at the cell's spacing.
         foreach (var line in GridLabel.StrokesMm(l, grid.Number, originX, originY))
             for (int pass = 0; pass < passes; pass++)
                 for (int i = 0; i + 1 < line.Count; i++)
                 {
                     var (ax, ay) = line[i];
                     var (bx, by) = line[i + 1];
-                    double len = Math.Sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay));
-                    if (len <= 0) continue;
-                    double nx = -(by - ay) / len, ny = (bx - ax) / len;   // unit normal
-                    for (double o = -GridLabel.StrokeMm / 2 + lp / 2; o < GridLabel.StrokeMm / 2; o += lp)
-                    {
-                        sb.Append($"G0X{F(ax + nx * o)}Y{F(ay + ny * o)}\n");
-                        sb.Append($"G1X{F(bx + nx * o)}Y{F(by + ny * o)}S{power}\n");
-                        sb.Append($"G1X{F(bx + nx * o)}Y{F(by + ny * o)}S0\n");
-                    }
+                    job.Band(ax, ay, bx, by, GridLabel.StrokeMm, lp, power);
                 }
     }
 
@@ -218,67 +131,10 @@ public static class GcodeExport
         return (minX, minY, maxX, maxY);
     }
 
-    /// <summary>
-    /// The camera calibration target (<see cref="MOPAChroma.Scanning.BedCameraTarget"/>): nine
-    /// crosses at known bed positions, each with 1-9 bars beside it, drawn as vector strokes
-    /// with the given settings (only power, speed, frequency and pulse width are used).
-    /// Engrave it once on any scrap that marks, photograph it with the laser's camera, and
-    /// click the crosses.
-    /// </summary>
-    public static string CalibrationTarget(MopaSettings s)
-    {
-        var sb = new StringBuilder();
-        sb.Append(";wecreat 3.0.6\n");
-        sb.Append(";canvas border: 0 0 210 210\n");
-        sb.Append(Preamble);
-        sb.Append($"M38F{(int)Math.Round(s.FrequencyKHz)}\n");
-        sb.Append($"M39P{(int)Math.Round(s.PulseWidthNs)}\n");
-        sb.Append("G0F15000\n");
-        sb.Append($"G1F{(int)Math.Round(s.SpeedMmPerS * 60)}\n");
-        int power = (int)Math.Round(Math.Clamp(s.PowerPercent, 0, 100) * 10);
-        var pts = MOPAChroma.Scanning.BedCameraTarget.Points;
-        const double arm = MOPAChroma.Scanning.BedCameraTarget.ArmMm;
-        for (int i = 0; i < pts.Length; i++)
-        {
-            double cx = pts[i].X, cy = pts[i].Y;
-            StrokeX(sb, cx - arm, cx + arm, cy, power);
-            StrokeY(sb, cx, cy - arm, cy + arm, power);
-            // i + 1 bars to the right of the cross (to the left on the right-hand column, to stay on the bed).
-            double dir = cx > 150 ? -1 : 1;
-            for (int b = 0; b <= i; b++)
-            {
-                double x = cx + dir * (MOPAChroma.Scanning.BedCameraTarget.BarGapMm + b * MOPAChroma.Scanning.BedCameraTarget.BarSpacingMm);
-                double half = MOPAChroma.Scanning.BedCameraTarget.BarLengthMm / 2;
-                StrokeY(sb, x, cy - half, cy + half, power);
-            }
-        }
-        sb.Append(Postamble);
-        return sb.ToString();
-    }
+    /// <summary>The camera calibration target; now <see cref="LumosUltra.Camera.CalibrationTarget"/>, kept here for callers.</summary>
+    public static string CalibrationTarget(MopaSettings s) => LumosUltra.Camera.CalibrationTarget.Gcode(s);
 
-    // Axis-aligned strokes in the confirmed pattern (powered G1, then a zero-length G1 at S0),
-    // each three lines 0.05 mm apart so it reads clearly on any finish.
-    private static void StrokeX(StringBuilder sb, double x0, double x1, double y, int power)
-    {
-        for (int k = -1; k <= 1; k++)
-        {
-            sb.Append($"G0X{F(x0)}Y{F(y + k * 0.05)}\n");
-            sb.Append($"G1X{F(x1)}S{power}\n");
-            sb.Append($"G1X{F(x1)}S0\n");
-        }
-    }
-
-    private static void StrokeY(StringBuilder sb, double x, double y0, double y1, int power)
-    {
-        for (int k = -1; k <= 1; k++)
-        {
-            sb.Append($"G0X{F(x + k * 0.05)}Y{F(y0)}\n");
-            sb.Append($"G1Y{F(y1)}S{power}\n");
-            sb.Append($"G1Y{F(y1)}S0\n");
-        }
-    }
-
-    private static void AppendCell(StringBuilder sb, GridCell cell, GridLayout l, double originX, double originY)
+    private static void AppendCell(MakeItJob job, GridCell cell, GridLayout l, double originX, double originY)
     {
         var s = cell.Settings;
         double pitch = s.LinePitchMm;
@@ -286,35 +142,10 @@ public static class GcodeExport
 
         double x0 = originX + cell.Column * (l.CellSizeMm + l.GapMm);
         double y0 = originY + cell.Row * (l.CellSizeMm + l.GapMm);
-        double margin = Math.Clamp(l.CellSizeMm * MarginFraction, 0, l.CellSizeMm / 2 - 0.001);
-        double xStart = x0, xBurnStart = x0 + margin, xBurnEnd = x0 + l.CellSizeMm - margin, xEnd = x0 + l.CellSizeMm;
 
-        int lines = Math.Max(1, (int)Math.Round(l.CellSizeMm / pitch));
-        int power = (int)Math.Round(Math.Clamp(s.PowerPercent, 0, 100) * 10);
-        int freq = (int)Math.Round(s.FrequencyKHz);
-        int pulseWidthNs = (int)Math.Round(s.PulseWidthNs);
-        int feed = (int)Math.Round(s.SpeedMmPerS * 60);
-
-        sb.Append($"M38F{freq}\n");
-        sb.Append($"M39P{pulseWidthNs}\n");
-        sb.Append("G0F15000\n");
-        sb.Append($"G1F{feed}\n");
-
-        for (int pass = 0; pass < Math.Max(1, s.Passes); pass++)
-        {
-            for (int i = 0; i < lines; i++)
-            {
-                double y = y0 + i * pitch;
-                sb.Append($"G0Y{F(y)}\n");
-                sb.Append($"G0X{F(xStart)}\n");
-                sb.Append($"G1X{F(xBurnStart)}S0\n");
-                sb.Append($"G1X{F(xBurnEnd)}S{power}\n");
-                sb.Append($"G1X{F(xEnd)}S0\n");
-            }
-        }
+        job.Pulse(s.FrequencyKHz, s.PulseWidthNs).Feed(s.SpeedMmPerS);
+        job.RasterCell(x0, y0, l.CellSizeMm, pitch, MakeItJob.PowerS(s.PowerPercent), s.Passes, MarginFraction);
     }
-
-    private static string F(double v) => v.ToString("0.###", Inv);
 }
 
 /// <summary>

@@ -1,4 +1,4 @@
-namespace MOPAChroma.Laser;
+namespace LumosUltra.Jobs;
 
 /// <summary>
 /// One set of machine settings, in the units the WeCreat MakeIt UI shows, so a cell

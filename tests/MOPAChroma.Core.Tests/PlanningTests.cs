@@ -2,7 +2,7 @@ using System.Xml.Linq;
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 using MOPAChroma.Planning;
 using Xunit.Abstractions;
 

@@ -47,7 +47,10 @@
   <Folder Name="/src/">
     <Project Path="src/GridCsvToGcode/GridCsvToGcode.csproj" />
     <Project Path="src/LumosUltra.Client.TestHarness/LumosUltra.Client.TestHarness.csproj" />
+    <Project Path="src/LumosUltra.Desktop/LumosUltra.Desktop.csproj" />
+    <Project Path="src/LumosUltra.Camera/LumosUltra.Camera.csproj" />
     <Project Path="src/LumosUltra.Client/LumosUltra.Client.csproj" />
+    <Project Path="src/LumosUltra.Jobs/LumosUltra.Jobs.csproj" />
     <Project Path="src/MOPAChroma.Core/MOPAChroma.Core.csproj" />
     <Project Path="src/MOPAChromaAtlas/MOPAChromaAtlas.csproj" />
   </Folder>

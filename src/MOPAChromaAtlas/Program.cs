@@ -133,15 +133,17 @@ internal sealed record StartupOptions
     public string? SendDemoPath { get; init; }
     /// <summary>Opens the palette window on the demo atlas (simulated colours).</summary>
     public bool PaletteDemo { get; init; }
+    /// <summary>Opens Capture angles on the demo atlas's first grid and runs a quick simulated capture into this folder.</summary>
+    public string? CaptureDemoFolder { get; init; }
     /// <summary>Writes every camera FlashCap can see, with all its formats, to this text file and exits.</summary>
     public string? ListCamerasPath { get; init; }
     /// <summary>Test-captures from cameras whose name contains Name, writing a report and PNGs to Folder, and exits.</summary>
     public (string Name, string Folder)? GrabCamera { get; init; }
     /// <summary>Asks the laser's undocumented read-only status endpoints (light, camera calibration) and writes the answers here, then exits.</summary>
     public string? LumosProbePath { get; init; }
-    public MOPAChroma.Scanning.PointD[] ScanDemoClicks { get; init; } = [];
+    public LumosUltra.Camera.PointD[] ScanDemoClicks { get; init; } = [];
 
-    private static MOPAChroma.Scanning.PointD Pt(string s)
+    private static LumosUltra.Camera.PointD Pt(string s)
     {
         var p = s.Split(',');
         return new(double.Parse(p[0], System.Globalization.CultureInfo.InvariantCulture),
@@ -161,6 +163,7 @@ internal sealed record StartupOptions
                 "--update-feed" => o with { UpdateFeed = Path.GetFullPath(Next()) },
                 "--no-update-check" => o with { NoUpdateCheck = true },
                 "--palette-demo" => o with { PaletteDemo = true },
+                "--capture-demo" => o with { CaptureDemoFolder = Path.GetFullPath(Next()), Demo = true },
                 "--screenshot" => o with { ScreenshotPath = Path.GetFullPath(Next()) },
                 // --scan-demo <image> [x1,y1 x2,y2 x3,y3] : open the importer on this image. With
                 // corner clicks (image pixels) the grid is placed from them; without, it is found

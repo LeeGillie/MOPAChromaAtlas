@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Standalone: writing WeCreat Lumos Ultra job files the way MakeIt writes them, the
+    settings and physics of a MOPA source, a stroke font for engraved labels, and the
+    independent heat audit every job passes before it is sent. No dependency on anything
+    MOPAChroma-specific, so other repositories (DepthView) reference it as well as
+    MOPAChromaAtlas from this solution. See README.md for what is confirmed on hardware.
+  -->
+  <PropertyGroup>
+    <RootNamespace>LumosUltra.Jobs</RootNamespace>
+    <AssemblyName>LumosUltra.Jobs</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Writes WeCreat Lumos Ultra (MakeIt-style) G-code jobs and audits their heat per area. Unofficial; not affiliated with WeCreat.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MOPAChroma.Core.Tests" />
+  </ItemGroup>
+
+</Project>

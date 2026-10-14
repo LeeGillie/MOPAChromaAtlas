@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Standalone: the Lumos Ultra's built-in camera as a measuring instrument - a plain RGB
+    image type, the plane-to-plane map and lens model that put a bed position in a picture
+    (BedCamera), the engraved target that calibrates it, and the geometry behind them. No
+    dependency on anything MOPAChroma-specific, so other repositories (DepthView)
+    reference it as well as MOPAChromaAtlas from this solution.
+  -->
+  <PropertyGroup>
+    <RootNamespace>LumosUltra.Camera</RootNamespace>
+    <AssemblyName>LumosUltra.Camera</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Description>Calibrates the WeCreat Lumos Ultra's camera to its bed, so a job can be placed on a picture before it is engraved. Unofficial; not affiliated with WeCreat.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="MOPAChroma.Core.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Decoding the camera's JPEGs and keeping PNG copies; the same library and version as the apps. -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="$(ImageSharpVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The calibration target is a job. -->
+    <ProjectReference Include="..\LumosUltra.Jobs\LumosUltra.Jobs.csproj" />
+  </ItemGroup>
+
+</Project>

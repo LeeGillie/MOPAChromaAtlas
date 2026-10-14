@@ -1,7 +1,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace MOPAChroma.Scanning;
+namespace LumosUltra.Camera;
 
 /// <summary>
 /// A decoded image as plain 8-bit RGB, row-major. Kept free of any imaging library type

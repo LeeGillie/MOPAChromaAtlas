@@ -3,23 +3,23 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Media;
+using LumosUltra.Camera;
 using LumosUltra.Client;
 using LumosUltra.Client.Models;
-using MOPAChroma.Grids;
-using MOPAChroma.Laser;
-using MOPAChroma.Scanning;
-using MOPAChromaAtlas.Capture;
+using LumosUltra.Jobs;
 
-namespace MOPAChromaAtlas.Views;
+namespace LumosUltra.Desktop;
 
 /// <summary>
 /// Calibrates the laser's camera to the bed (<see cref="BedCamera"/>): engrave the nine-cross
 /// target (<see cref="BedCameraTarget"/>), photograph it with the laser's camera, click each
-/// cross in turn. Saved in the capture settings; returns true when saved.
+/// cross in turn. Saved in the shared <see cref="LumosSettings"/>; returns true when saved.
+/// Host-neutral: any program with the laser on its network can show it (give it the owner
+/// window so it takes the owner's icon).
 /// </summary>
 public partial class CameraCalibrationWindow : Window
 {
-    private readonly CaptureSettings _settings = CaptureSettings.Load();
+    private readonly LumosSettings _settings;
     private readonly CancellationTokenSource _cts = new();
     // Clicked cross centres, in any order; Match works out which cross each one is.
     private readonly List<PointD> _clicks = [];
@@ -27,8 +27,17 @@ public partial class CameraCalibrationWindow : Window
     private BedCamera? _fit => _match?.Camera;
     private byte[]? _lastJpeg;
 
-    public CameraCalibrationWindow()
+    /// <summary>
+    /// The rated power the heat audit assumes when checking the target job before it is sent.
+    /// The highest a Lumos Ultra is sold with, so the check can only be stricter than the truth.
+    /// </summary>
+    public double AuditPowerW { get; set; } = SourceProfile.Presets.Max(p => p.RatedPowerW);
+
+    public CameraCalibrationWindow() : this(LumosSettings.Load()) { }
+
+    public CameraCalibrationWindow(LumosSettings settings)
     {
+        _settings = settings;
         InitializeComponent();
         Photo.EmptyText = "Step 1: engrave the target (left). Its picture appears here afterwards, ready for step 2.";
         Photo.Clicked = OnPhotoClicked;
@@ -38,7 +47,7 @@ public partial class CameraCalibrationWindow : Window
         SendButton.Click += async (_, _) => await SendAsync();
         StopButton.Click += async (_, _) =>
         {
-            try { using var c = new LumosUltraClient(_settings.LumosAddress); await c.CancelJobAsync(); EngraveText.Text = "Stop sent. If it keeps going, use the machine's stop button."; }
+            try { using var c = new LumosUltraClient(_settings.Address); await c.CancelJobAsync(); EngraveText.Text = "Stop sent. If it keeps going, use the machine's stop button."; }
             catch (Exception ex) { EngraveText.Text = $"Could not send stop ({ex.Message}). Use the machine's stop button."; }
         };
         PhotoButton.Click += async (_, _) => await PhotoAsync();
@@ -53,6 +62,13 @@ public partial class CameraCalibrationWindow : Window
         KeyDown += (_, e) => { if (e.Key == Key.Z && e.KeyModifiers.HasFlag(KeyModifiers.Control)) { UndoClick(); e.Handled = true; } };
         Closed += (_, _) => _cts.Cancel();
         ShowStep(1);
+    }
+
+    /// <summary>Shows the window over <paramref name="owner"/>, with its icon; true when a calibration was saved.</summary>
+    public static Task<bool> ShowAsync(Window owner, LumosSettings? settings = null)
+    {
+        var w = new CameraCalibrationWindow(settings ?? LumosSettings.Load()) { Icon = owner.Icon };
+        return w.ShowDialog<bool>(owner);
     }
 
     private MopaSettings TargetSettings() => new()
@@ -71,14 +87,22 @@ public partial class CameraCalibrationWindow : Window
         EngraveText.Text = "Checking the laser…";
         try
         {
-            using var client = new LumosUltraClient(_settings.LumosAddress);
+            using var client = new LumosUltraClient(_settings.Address);
             if (await client.TryIsDoorClosedAsync(_cts.Token) != true)
             {
                 EngraveText.Text = "The door is not confirmed closed: close it and try again.";
                 SendButton.IsEnabled = true;
                 return;
             }
-            await SafeSend.UploadAndArmAsync(client, GcodeExport.CalibrationTarget(TargetSettings()), null, _cts.Token);
+            // Every job is audited for heat per area before it leaves, whatever made it.
+            string gcode = CalibrationTarget.Gcode(TargetSettings());
+            var audit = JobAudit.Check(gcode, AuditPowerW);
+            if (!audit.Ok)
+            {
+                EngraveText.Text = audit.Message;
+                return;
+            }
+            await client.UploadAndArmJobAsync(gcode, ct: _cts.Token);
             EngraveText.Text = "Armed. Press Start on the machine. Nothing fires until you do.";
             await FollowAsync(client);
         }
@@ -129,7 +153,7 @@ public partial class CameraCalibrationWindow : Window
         StatusText.Text = "Taking a picture with the laser's camera…";
         try
         {
-            using var client = new LumosUltraClient(_settings.LumosAddress);
+            using var client = new LumosUltraClient(_settings.Address);
             _lastJpeg = await client.TakePhotoAsync(_cts.Token);
             await ShowPhotoAsync();
             ShowStep(2);
@@ -147,7 +171,8 @@ public partial class CameraCalibrationWindow : Window
     private async Task ShowPhotoAsync()
     {
         if (_lastJpeg is null) return;
-        var img = await Task.Run(() => _settings.LumosUpright(_lastJpeg));
+        var jpeg = _lastJpeg;
+        var img = await Task.Run(() => _settings.Upright(jpeg));
         _clicks.Clear();
         _match = null;
         Photo.SetPicture(img);
@@ -156,9 +181,9 @@ public partial class CameraCalibrationWindow : Window
 
     private async void Reorient(bool turn)
     {
-        if (turn) _settings.LumosQuarterTurns += _settings.LumosMirror ? -1 : 1;
-        else _settings.LumosMirror = !_settings.LumosMirror;
-        _settings.LumosQuarterTurns = ((_settings.LumosQuarterTurns % 4) + 4) % 4;
+        if (turn) _settings.QuarterTurns += _settings.Mirror ? -1 : 1;
+        else _settings.Mirror = !_settings.Mirror;
+        _settings.QuarterTurns = ((_settings.QuarterTurns % 4) + 4) % 4;
         _settings.Save();
         await ShowPhotoAsync();
     }
@@ -206,7 +231,7 @@ public partial class CameraCalibrationWindow : Window
         int matched = _match?.Index.Count(i => i >= 0) ?? 0;
         int stray = _match?.Index.Count(i => i < 0) ?? 0;
         StepText.Text = _clicks.Count == 0 ? "Click the first + mark."
-            : _clicks.Count < 5 ? $"{_clicks.Count} clicked. Keep going: Atlas starts recognising the marks after five."
+            : _clicks.Count < 5 ? $"{_clicks.Count} clicked. Keep going: the marks are recognised after five."
             : _match is null ? $"{_clicks.Count} clicked, but they do not fit the target's layout. Check each click is on a + mark (zoom in), or clear and start again."
             : $"{_clicks.Count} clicked, {matched} of the 9 marks recognised.";
 
@@ -214,7 +239,7 @@ public partial class CameraCalibrationWindow : Window
         {
             var f = m.Camera;
             var lines = new List<string>();
-            if (stray > 0) lines.Add($"A red ring with ? is a click that is not on a + mark. Undo it (or Clear all) and click the mark's centre.");
+            if (stray > 0) lines.Add("A red ring with ? is a click that is not on a + mark. Undo it (or Clear all) and click the mark's centre.");
             if (m.Margin < 2) lines.Add("Not sure yet which mark is which: click more of them.");
             if (matched < 6) lines.Add($"Click at least {6 - matched} more mark{(6 - matched == 1 ? "" : "s")} (all nine is best).");
             if (f.MaxMm > 3) lines.Add("The clicks are not precise enough: zoom in and click the centres.");
@@ -260,9 +285,7 @@ public partial class CameraCalibrationWindow : Window
     public void SaveCalibration()
     {
         if (_fit is null || !Trustworthy) return;
-        _settings.LumosCamera = _fit;
-        _settings.LumosCameraOrientation = _settings.LumosOrientation;
-        _settings.LumosCameraTargetVersion = BedCameraTarget.Version;
+        _settings.SetCamera(_fit);
         _settings.Save();
         Close(true);
     }

@@ -1,6 +1,6 @@
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 using MOPAChroma.Planning;
 
 namespace MOPAChroma.Tests;

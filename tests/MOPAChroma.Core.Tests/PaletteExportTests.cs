@@ -2,8 +2,7 @@ using System.Xml.Linq;
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
 using MOPAChroma.Export;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Tests;
 
 public class PaletteExportTests

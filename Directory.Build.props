@@ -23,11 +23,24 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
+  <!--
+    MOPAChroma Capture (the angle capture box) is a sister repository, checked out beside
+    this one: D:\DevHome\MOPAChroma Atlas and D:\DevHome\MOPAChroma Capture. Atlas builds
+    its library from source. Elsewhere set the environment variable CAPTURE_ROOT to its
+    folder. (A CI build needs it checked out there too; see RESUME-HERE.md.)
+  -->
+  <PropertyGroup>
+    <CaptureRoot Condition="'$(CAPTURE_ROOT)' != ''">$(CAPTURE_ROOT)</CaptureRoot>
+    <CaptureRoot Condition="'$(CaptureRoot)' == ''">$(MSBuildThisFileDirectory)..\MOPAChroma Capture\</CaptureRoot>
+    <CaptureRoot Condition="!HasTrailingSlash('$(CaptureRoot)')">$(CaptureRoot)\</CaptureRoot>
+  </PropertyGroup>
+
   <!-- Single source of truth for dependency versions. -->
   <PropertyGroup>
     <AvaloniaVersion>11.3.20</AvaloniaVersion>
     <ImageSharpVersion>3.1.12</ImageSharpVersion>
     <FlashCapVersion>1.12.0</FlashCapVersion>
+    <SystemIOPortsVersion>9.0.9</SystemIOPortsVersion>
   </PropertyGroup>
 
   <!--
@@ -40,4 +53,18 @@
   <PropertyGroup Condition="$(MSBuildProjectDirectory.StartsWith('\\'))">
     <UseAppHost>false</UseAppHost>
   </PropertyGroup>
+  <!--
+    SixLabors.ImageSharp 3.1.12 has five advisories (published 2026-10-07), fixed only in
+    4.1.2, which needs a Six Labors licence key to build. They were reviewed and accepted for
+    3.1.12 in DepthView (its csproj has the reasoning): the three high ones are in code these
+    programs never call (histogram equalisation, TIFF CCITT encoders), the two medium ones
+    need a deliberately crafted TIFF or ICC profile. Drop these once a licence is in place.
+  -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j3p4-wp97-rph4" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j9gm-c75j-xc9q" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-jjfr-hcj7-qf5w" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gwg2-r3hj-4w44" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-wmxv-xphr-5c9g" />
+  </ItemGroup>
 </Project>

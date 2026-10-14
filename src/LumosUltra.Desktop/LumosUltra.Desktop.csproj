@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Standalone Avalonia pieces for talking to a Lumos Ultra from a desktop program: the
+    settings shared between programs (address, camera orientation, camera calibration), a
+    zoomable picture view with a drawing layer, and the window that calibrates the laser's
+    camera to the bed. No dependency on anything MOPAChroma-specific, so other repositories
+    (DepthView) reference it as well as MOPAChromaAtlas from this solution.
+  -->
+  <PropertyGroup>
+    <RootNamespace>LumosUltra.Desktop</RootNamespace>
+    <AssemblyName>LumosUltra.Desktop</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Description>Avalonia windows and controls for the WeCreat Lumos Ultra: camera calibration and placement. Unofficial; not affiliated with WeCreat.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LumosUltra.Client\LumosUltra.Client.csproj" />
+    <ProjectReference Include="..\LumosUltra.Camera\LumosUltra.Camera.csproj" />
+    <ProjectReference Include="..\LumosUltra.Jobs\LumosUltra.Jobs.csproj" />
+  </ItemGroup>
+
+</Project>

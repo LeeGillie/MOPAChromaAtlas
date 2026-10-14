@@ -4,9 +4,9 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using MOPAChroma.Scanning;
+using LumosUltra.Camera;
 
-namespace MOPAChromaAtlas.Views;
+namespace LumosUltra.Desktop;
 
 /// <summary>
 /// A picture to look at closely: scroll to zoom about the pointer, drag to move around, with

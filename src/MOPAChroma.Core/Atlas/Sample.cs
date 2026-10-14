@@ -1,6 +1,5 @@
 using MOPAChroma.Color;
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Atlas;
 
 /// <summary>What happened in a cell, apart from its colour.</summary>

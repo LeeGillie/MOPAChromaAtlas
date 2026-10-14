@@ -1,5 +1,4 @@
-using MOPAChroma.Laser;
-
+using LumosUltra.Jobs;
 namespace MOPAChroma.Grids;
 
 /// <summary>The settings a MakeIt test card can sweep across its rows or columns.</summary>

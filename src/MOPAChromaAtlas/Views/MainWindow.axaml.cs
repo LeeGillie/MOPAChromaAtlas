@@ -7,7 +7,7 @@ using Avalonia.Platform.Storage;
 using MOPAChroma.Atlas;
 using MOPAChroma.Color;
 using MOPAChroma.Grids;
-using MOPAChroma.Laser;
+using LumosUltra.Jobs;
 using MOPAChroma.Planning;
 using MOPAChroma.Scanning;
 
@@ -97,6 +97,7 @@ public partial class MainWindow : Window
         ImportScanButton.Click += async (_, _) => await ImportScanAsync();
         SendButton.Click += async (_, _) => await SendToLaserAsync();
         ReadGridButton.Click += async (_, _) => await ReadGridAsync();
+        CaptureAnglesButton.Click += async (_, _) => await CaptureAnglesAsync();
         ReadSheetButton.Click += async (_, _) => await ReadSheetAsync();
         MicroGridButton.Click += async (_, _) => await PlanMicroGridAsync();
         SaveResultButton.Click += (_, _) => SaveResult();
@@ -448,6 +449,7 @@ public partial class MainWindow : Window
         // Sending and reading back are for Atlas's own grids; a MakeIt card came from MakeIt.
         SendButton.IsEnabled = g is { Definition: null } && g.Cells.Count > 0;
         ReadGridButton.IsEnabled = g is { Definition: null } && g.Cells.Count > 0;
+        CaptureAnglesButton.IsEnabled = g is { Definition: null } && g.Cells.Count > 0;
         GridHint.Text = g?.Definition is { } d
             ? $"Laid out as on the card: {d.Describe()}. " +
               (g.Card is { } card ? $"Lot {Or(card.Lot)}, cleaning {Or(card.Cleaning)}, MakeIt {Or(card.MakeItVersion)}. " : "") +
@@ -818,6 +820,13 @@ public partial class MainWindow : Window
         }
         var result = await new SendToLaserWindow(g, ctx).ShowDialog<ScanImportResult?>(this);
         if (result is not null) RecordReading(result);
+    }
+
+    /// <summary>Angle capture of the selected grid's card in the capture box, then its import.</summary>
+    private async Task CaptureAnglesAsync()
+    {
+        if (_grid is not { Definition: null } g) return;
+        await new CaptureWindow(_atlas, g, Save, Program.Options.Demo).ShowDialog(this);
     }
 
     private async Task ReadGridAsync()

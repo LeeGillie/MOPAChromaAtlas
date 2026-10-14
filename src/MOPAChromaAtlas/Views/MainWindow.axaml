@@ -156,6 +156,8 @@
                 ToolTip.Tip="Engrave this grid on the Lumos Ultra: Atlas builds and arms the job, waits for you to press Start on the machine, then photographs the card and reads every cell for you to check." />
         <Button x:Name="ReadGridButton" Content="Read this grid from an image…" HorizontalAlignment="Stretch"
                 ToolTip.Tip="Record this grid's results from a scan or photo of its card: the cells are found and read automatically, for you to check." />
+        <Button x:Name="CaptureAnglesButton" Content="Capture angles…" HorizontalAlignment="Stretch" Margin="0,6,0,0"
+                ToolTip.Tip="Put this grid's card in the MOPAChroma Capture box: it tilts and turns the card under eight lights and photographs every combination, so each cell's colour can be seen at every angle." />
         <Button x:Name="ReadSheetButton" Content="Read every grid on a scanned sheet…" HorizontalAlignment="Stretch" Margin="0,6,0,0"
                 ToolTip.Tip="Open a scan or sharp photo of a whole sheet: every Atlas grid on it (with corner crosses and a number) that shows clearly is found, matched by its number and read in one go. The newest reading of each cell is the one the palette and exports use." />
         <Button x:Name="ImportScanButton" Content="Import MakeIt test-card scan…" HorizontalAlignment="Stretch" Margin="0,6,0,0"

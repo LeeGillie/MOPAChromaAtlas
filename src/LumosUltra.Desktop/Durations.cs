@@ -1,4 +1,4 @@
-namespace MOPAChromaAtlas.Views;
+namespace LumosUltra.Desktop;
 
 /// <summary>How long something took, for people: "4:07" under an hour, "1:04:07" from an hour up.</summary>
 public static class Durations

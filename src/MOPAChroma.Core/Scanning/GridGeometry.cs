@@ -1,13 +1,5 @@
 namespace MOPAChroma.Scanning;
 
-public readonly record struct PointD(double X, double Y)
-{
-    public static PointD operator +(PointD a, PointD b) => new(a.X + b.X, a.Y + b.Y);
-    public static PointD operator -(PointD a, PointD b) => new(a.X - b.X, a.Y - b.Y);
-    public static PointD operator *(PointD a, double k) => new(a.X * k, a.Y * k);
-    public double Length => Math.Sqrt(X * X + Y * Y);
-}
-
 /// <summary>
 /// Where a grid of square cells sits in an image: centre(row, col) = Origin + col·ColStep
 /// + row·RowStep. An affine grid, so it copes with the card being shifted, tilted or
