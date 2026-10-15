@@ -3,7 +3,8 @@ namespace LumosUltra.Jobs;
 /// <summary>
 /// A tiny single-line font for engraving short labels ("Grid 29") as vector strokes: each
 /// glyph is a few polylines on a 4 × 6 unit box (cap height 6, x-height 4, baseline 0, y up).
-/// Only the characters labels need: digits, space, and the letters of "Grid".
+/// Only the characters labels need: digits, space, the letters of "Grid", and "DV" (DepthView's
+/// coupon numbers).
 /// </summary>
 public static class StrokeFont
 {
@@ -11,6 +12,8 @@ public static class StrokeFont
 
     private static readonly Dictionary<char, Glyph> Glyphs = new()
     {
+        ['D'] = new(5.5, [[0, 0, 0, 6, 2.5, 6, 4, 4.5, 4, 1.5, 2.5, 0, 0, 0]]),
+        ['V'] = new(5.5, [[0, 6, 2, 0, 4, 6]]),
         ['G'] = new(5.5, [[4, 5, 3, 6, 1, 6, 0, 5, 0, 1, 1, 0, 3, 0, 4, 1, 4, 3, 2.2, 3]]),
         ['r'] = new(4.0, [[0, 4, 0, 0], [0, 2.4, 1.6, 4, 3, 4]]),
         ['i'] = new(2.2, [[0.6, 0, 0.6, 4], [0.6, 5.3, 0.6, 5.8]]),
